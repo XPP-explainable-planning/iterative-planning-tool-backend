@@ -7,7 +7,7 @@ export interface PddlFile {
     path: string;
 }
 
-const PddlFileSchema = new Schema({
+export const PddlFileSchema = new Schema({
     name: { type: String, required: true},
     domain: { type: String, required: true},
     type: { type: String, required: true},

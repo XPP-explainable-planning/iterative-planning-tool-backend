@@ -37,7 +37,7 @@ const upload = multer({
     fileFilter
 });
 
-pddlFileRouter.post('/pddl-file', upload.single('pddlfile'), async (req, res) => {
+pddlFileRouter.post('/', upload.single('pddlfile'), async (req, res) => {
     try {
         console.log('POST FILE');
         console.log(req.body);
@@ -65,12 +65,11 @@ pddlFileRouter.post('/pddl-file', upload.single('pddlfile'), async (req, res) =>
     }
 });
 
-pddlFileRouter.get('/pddl-file/:type', async (req, res) => {
+pddlFileRouter.get('/type/:type', async (req, res) => {
     console.log('PDDL FILE: GET');
     const fileType = req.params.type;
     const pddlFiles = await  PddlFileModel.find({ type: fileType });
-    // let pddlFiles = await  FileModel.find();
-    console.log('GET PDDL FILES: ' + pddlFiles);
+    console.log('GET PDDL FILES: #' + pddlFiles.length);
     if (!pddlFiles) { return res.status(404).send({ message: 'not found PDDL files' }); }
     res.send({
         data: pddlFiles
@@ -78,7 +77,7 @@ pddlFileRouter.get('/pddl-file/:type', async (req, res) => {
 
 });
 
-pddlFileRouter.get('/pddl-file/:id', async (req, res) => {
+pddlFileRouter.get('/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('ID: ' + id);
     const pddlFile = await PddlFileModel.findOne({ _id: id });
@@ -89,7 +88,7 @@ pddlFileRouter.get('/pddl-file/:id', async (req, res) => {
 
 });
 
-pddlFileRouter.delete('/pddl-file/:id', async (req, res) => {
+pddlFileRouter.delete('/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('DELETE ID: ' + id);
     const pddlFile = await PddlFileModel.deleteOne({ _id: id });

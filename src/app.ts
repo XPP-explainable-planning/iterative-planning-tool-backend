@@ -1,3 +1,5 @@
+import { projectRouter } from './routes/project';
+
 console.log('-------- EXPLORE BACKEND ---------');
 
 import HttpErrors from 'http-errors';
@@ -12,7 +14,8 @@ import sassMiddleware from 'node-sass-middleware';
 import errorMiddleware from './middleware/error.middleware';
 
 import { indexRouter } from './routes';
-import { pddlFileRouter} from './routes/pddl_file';
+import { pddlFileRouter } from './routes/pddl_file';
+import { planPropertyRouter } from './routes/plan_property';
 
 const app = express();
 const cors = require('cors');
@@ -37,7 +40,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api', pddlFileRouter);
+app.use('/api/pddl-file', pddlFileRouter);
+app.use('/api/plan-property', planPropertyRouter);
+app.use('/api/project', projectRouter);
 
 
 // catch 404 and forward to error handler
