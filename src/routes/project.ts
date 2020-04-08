@@ -48,10 +48,10 @@ projectRouter.get('', async (req, res) => {
 projectRouter.get('/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('ID: ' + id);
-    const property = await ProjectModel.findOne({ _id: id });
-    if (!property) { return res.status(404).send({ message: 'not found project' }); }
+    const project = await ProjectModel.findOne({ _id: id });
+    if (!project) { return res.status(404).send({ message: 'not found project' }); }
     res.send({
-        data: property
+        data: project
     });
 
 });

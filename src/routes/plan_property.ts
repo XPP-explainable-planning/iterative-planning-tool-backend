@@ -13,18 +13,20 @@ planPropertyRouter.post('/', async (req, res) => {
     try {
         console.log('POST PLAN PROPERTY');
         console.log(req.body);
+        console.log(req.body.actionSets);
         const planProperty = new PlanPropertyModel({
             name: req.body.name,
             type: req.body.type,
             domain: req.body.domain,
             formula: req.body.formula,
-            action_sets: req.body.action_sets
+            actionSets: req.body.actionSets
         });
         if (!planProperty) {
             console.log('Plan Property ERROR');
             return res.status(403).send('not found file');
         }
         const data = await planProperty.save();
+        console.log(data);
         res.send({
             status: true,
             message: 'File is uploaded',
@@ -35,6 +37,16 @@ planPropertyRouter.post('/', async (req, res) => {
     catch (ex) {
         res.send(ex.message);
     }
+});
+
+planPropertyRouter.get('/', async (req, res) => {
+    const properties = await  PlanPropertyModel.find();
+    console.log('GET properties: #' + properties.length);
+    if (!properties) { return res.status(404).send({ message: 'not found properties' }); }
+    res.send({
+        data: properties
+    });
+
 });
 
 planPropertyRouter.get('/domain/:domain', async (req, res) => {

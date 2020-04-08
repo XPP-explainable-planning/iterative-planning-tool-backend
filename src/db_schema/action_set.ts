@@ -3,7 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 export interface ActionSet {
     _id: string;
     name: string;
-    actions: [string];
+    actions: string[];
 }
 
 export const ActionSetSchema = new Schema({
