@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 import multer from 'multer';
 import path from 'path';
 
-import { PddlFileModel } from '../db_schema/pddl_file';
+import { PddlFile, PddlFileModel } from '../db_schema/pddl_file';
+import { get_goal_facts } from '../planner/pddl_file_utils';
 
 export const pddlFileRouter = express.Router();
 
@@ -84,6 +85,19 @@ pddlFileRouter.get('/:id', async (req, res) => {
     if (!pddlFile) { return res.status(404).send({ message: 'not found PDDL file' }); }
     res.send({
         data: pddlFile
+    });
+
+});
+
+pddlFileRouter.get('/:id/goal-facts', async (req, res) => {
+    const id = mongoose.Types.ObjectId(req.params.id);
+    // console.log('Goal facts ID: ' + id);
+    const pddlFileModel = await PddlFileModel.findOne({ _id: id });
+    if (!pddlFileModel) { return res.status(404).send({ message: 'not found PDDL file' }); }
+    const pddlFile = pddlFileModel.toJSON() as PddlFile;
+    const goals: string[] = get_goal_facts(pddlFile);
+    res.send({
+        data: goals
     });
 
 });

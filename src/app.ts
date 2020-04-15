@@ -16,7 +16,8 @@ import errorMiddleware from './middleware/error.middleware';
 import { indexRouter } from './routes';
 import { pddlFileRouter } from './routes/pddl_file';
 import { planPropertyRouter } from './routes/plan_property';
-import  { plannerCallRouter} from './routes/planner-calls';
+import  { plannerRouter} from './routes/planner';
+import { runRouter } from './routes/run';
 
 const app = express();
 const cors = require('cors');
@@ -41,10 +42,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/results', express.static(path.join(__dirname, 'results')));
 app.use('/api/pddl-file', pddlFileRouter);
 app.use('/api/plan-property', planPropertyRouter);
 app.use('/api/project', projectRouter);
-app.use('/api/planner', plannerCallRouter);
+app.use('/api/planner', plannerRouter);
+app.use('/api/run', runRouter);
 
 
 // catch 404 and forward to error handler

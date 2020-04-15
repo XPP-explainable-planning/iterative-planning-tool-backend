@@ -15,8 +15,8 @@ projectRouter.post('/', async (req, res) => {
         const project = new ProjectModel({
             name: req.body.name,
             description: req.body.description,
-            domain_file: req.body.domain_file,
-            problem_file: req.body.problem_file,
+            domainFile: req.body.domainFile,
+            problemFile: req.body.problemFile,
         });
         if (!project) {
             console.log('project ERROR');
@@ -46,6 +46,7 @@ projectRouter.get('', async (req, res) => {
 
 
 projectRouter.get('/:id', async (req, res) => {
+    console.log('GET project id: ' + req.params.id);
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('ID: ' + id);
     const project = await ProjectModel.findOne({ _id: id });

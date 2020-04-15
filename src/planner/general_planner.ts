@@ -4,10 +4,10 @@ import * as child from 'child_process';
 import 'fs';
 
 import { Project } from '../db_schema/project';
-import { Run } from '../db_schema/run';
+import { PlanRun, ExplanationRun, Goal } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan_property';
 import { ExperimentSetting } from './experiment_setting';
-import { planner, uploadsPath, spot, ltlkit, resultsPath } from '../settings';
+import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
 import { writeFileSync } from 'fs';
 import { PythonShell } from 'python-shell';
 
@@ -19,17 +19,16 @@ const plannerSetting = ['--heuristic', 'h=hc(nogoods=false, cache_estimates=fals
 export class PlannerCall {
 
     runFolder: string;
-    project: Project;
-    run: Run;
 
-    runid: string;
-
-    constructor(root: string, run: Run) {
-        this.runid = run._id;
-        this.runFolder = path.join(root, String(this.runid));
-        this.project = run.project;
-        this.run = run;
-        // console.log(this.run);
+    constructor(
+        protected root: string,
+        protected runId: string,
+        protected domainFile: string,
+        protected problemFile: string,
+        protected planProperties: PlanProperty[],
+        protected hardGoals: Goal[],
+        protected softGoals: Goal[]) {
+        this.runFolder = path.join(root, String(this.runId));
 
         this.create_experiment_setup();
     }
@@ -37,8 +36,8 @@ export class PlannerCall {
     create_experiment_setup(): void {
 
         const out = child.execSync(`mkdir ${this.runFolder}`);
-        const domainFileName = path.basename(this.project.domain_file.path);
-        const problemFileName = path.basename(this.project.problem_file.path);
+        const domainFileName = path.basename(this.domainFile);
+        const problemFileName = path.basename(this.problemFile);
 
         child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
         child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
@@ -52,26 +51,16 @@ export class PlannerCall {
     }
 
     generate_experiment_setting(): ExperimentSetting {
-        const hardGoals: string[] = [];
-        const softGoals: string[] = [];
-        const properties: PlanProperty[] = [];
-
-        for (const g of this.run.hard_properties) {
-            properties.push(g);
-            hardGoals.push(g.name);
-        }
-
-        for (const g of this.run.soft_properties) {
-            properties.push(g);
-            softGoals.push(g.name);
-        }
+        const hardGoals: string[] = this.hardGoals.map(value => value.name);
+        const softGoals: string[] = this.softGoals.map(value => value.name);
+        const properties: PlanProperty[] = this.planProperties;
 
         return { hard_goals: hardGoals, plan_properties: properties, soft_goals: softGoals};
     }
 
     async run_planner_python_shell(): Promise<void> {
 
-        const addArgs = ['--build', 'release64', `${this.runFolder}/domain.pddl`,
+        const addArgs = [this.runFolder, '--build', 'release64', `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`, `${this.runFolder}/exp_setting.json`, ...plannerSetting];
 
         const options = {
@@ -86,7 +75,7 @@ export class PlannerCall {
         const results = await this.pythonShellCall(options);
         console.log('planner finished');
         // console.log(results.join('\n'));
-        writeFileSync(path.join(resultsPath, `out_${this.runid}.log`), results.join('\n'), 'utf8');
+        writeFileSync(path.join(resultsPath, `out_${this.runId}.log`), results.join('\n'), 'utf8');
 
         this.copy_experiment_results();
     }
@@ -94,7 +83,7 @@ export class PlannerCall {
     pythonShellCall(options: any): Promise<string[]> {
         const p: Promise<string[]> = new Promise((resolve, reject) => {
             // @ts-ignore
-            PythonShell.run('fast-downward.py', options,  (err: any, results: any) => {
+            PythonShell.run('run_FD.py', options,  (err: any, results: any) => {
                 if (err) {
                     console.warn(err);
                     reject(err);
@@ -108,10 +97,36 @@ export class PlannerCall {
     }
 
     copy_experiment_results(): void {
-        child.spawnSync('cp', [path.join(this.runFolder + '/fast-downward/', 'mugs.json'),
-            path.join(resultsPath, `mugs_${this.runid}.json`)]);
+        // implement in subclass
+    }
+}
 
-        this.run.result = path.join(uploadsPath, `mugs_${this.runid}.json`);
-        this.run.log = path.join(uploadsPath, `out_${this.runid}.log`);
+export class PlanCall extends PlannerCall{
+
+    constructor(root: string, private run: PlanRun) {
+        super(root, run._id, run.project.domainFile.path, run.project.problemFile.path, run.planProperties, run.hardGoals, []);
+    }
+
+    copy_experiment_results(): void {
+        child.spawnSync('cp', [path.join(this.runFolder, 'sas_plan'),
+            path.join(resultsPath, `plan_${this.runId}.sas`)]);
+
+        this.run.log = serverResultsPath + `/out_${this.runId}.log`;
+        this.run.plan = serverResultsPath + `/plan_${this.runId}.sas`;
+    }
+}
+
+export class ExplanationCall extends PlannerCall{
+
+    constructor(root: string, project: Project, private run: ExplanationRun) {
+        super(root, run._id, project.domainFile.path, project.problemFile.path, run.planProperties, run.hardGoals, run.softGoals);
+    }
+
+    copy_experiment_results(): void {
+        child.spawnSync('cp', [path.join(this.runFolder, 'mugs.json'),
+            path.join(resultsPath, `mugs_${this.runId}.json`)]);
+
+        this.run.result = serverResultsPath + `/mugs_${this.runId}.json`;
+        this.run.log = serverResultsPath + `/out_${this.runId}.log`;
     }
 }

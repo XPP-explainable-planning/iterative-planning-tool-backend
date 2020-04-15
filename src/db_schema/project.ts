@@ -5,16 +5,16 @@ import { PlanProperty } from './plan_property';
 export interface Project {
     _id: string;
     name: string;
-    domain_file: PddlFile;
-    problem_file: PddlFile;
+    domainFile: PddlFile;
+    problemFile: PddlFile;
     description: string;
     properties: PlanProperty[];
 }
 
 const ProjectSchema = new Schema({
     name: { type: String, required: true},
-    domain_file: { type: PddlFileSchema, required: true},
-    problem_file: { type: PddlFileSchema, required: true},
+    domainFile: { type: PddlFileSchema, required: true},
+    problemFile: { type: PddlFileSchema, required: true},
     description: { type: String, required: true},
     properties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
 });
