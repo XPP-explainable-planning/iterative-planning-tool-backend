@@ -18,6 +18,7 @@ import { pddlFileRouter } from './routes/pddl_file';
 import { planPropertyRouter } from './routes/plan_property';
 import  { plannerRouter} from './routes/planner';
 import { runRouter } from './routes/run';
+import { demoRouter } from './routes/demo';
 
 const app = express();
 const cors = require('cors');
@@ -43,11 +44,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/results', express.static(path.join(__dirname, 'results')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/pddl-file', pddlFileRouter);
 app.use('/api/plan-property', planPropertyRouter);
 app.use('/api/project', projectRouter);
 app.use('/api/planner', plannerRouter);
 app.use('/api/run', runRouter);
+app.use('/api/demo', demoRouter);
+
+console.log('Static path: ');
+console.log(path.join(__dirname, 'uploads'));
+console.log(path.join(__dirname, 'results'));
+console.log(path.join(__dirname, 'images'));
 
 
 // catch 404 and forward to error handler
@@ -67,10 +75,15 @@ app.use((req, res, next) => {
 
 
 // Data base connection
-const port = process.env.PORT || 3001;
-mongoose.connect('mongodb://localhost/chat', { useNewUrlParser: true })
-    .then(() => console.log('connected to DB'))
+const port = process.env.PORT || 3000;
+mongoose.connect('mongodb://localhost/chat', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => {
+      console.log('connected to DB');
+      // mongoose.connection.db.dropDatabase();
+
+    })
     .catch((err: { message: any; }) => console.log(`something went wrong ${err.message}`));
+
 
 app.listen(port , () => console.log(`DB port working on ${port}`));
 

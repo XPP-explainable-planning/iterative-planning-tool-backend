@@ -1,3 +1,6 @@
+import { PlanRunModel } from './../db_schema/run';
+import { PlanPropertyModel, PlanProperty } from './../db_schema/plan_property';
+import { PropertyCheck } from './../planner/property_check';
 import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
@@ -21,6 +24,7 @@ function to_id_list(props: any) {
 
 
 plannerRouter.post('/plan', async (req, res) => {
+    console.log('Compute Plan');
     try {
         console.log(req.body);
         const runModel = new PlanRunModel({
@@ -30,26 +34,39 @@ plannerRouter.post('/plan', async (req, res) => {
             project: req.body.project,
             planProperties: req.body.planProperties,
             hardGoals: req.body.hardGoals,
+            previousRun: req.body.previousRun,
         });
         if (!runModel) {
             console.log('project ERROR');
             return res.status(403).send('run could not be stored');
         }
         const saveResult = await runModel.save();
-        console.log(saveResult);
         const run: PlanRun = req.body  as PlanRun;
         run._id = runModel._id;
 
         const planner = new PlanCall(experimentsRootPath, run);
-        await planner.run_planner_python_shell();
+        await planner.executeRun();
+        planner.tidyUp();
+        console.log('Plan computed');
 
-        // TODO find better way to write this
-        const data = await PlanRunModel.updateOne({ _id: run._id},
-            { $set: { log: run.log, plan: run.plan, status: Status.finished} });
-        console.log(data);
+        // check which plan properties are satisfied by the plan
+        const planPropertiesDoc = await PlanPropertyModel.find({ project: run.project._id, isUsed: true });
+        const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
+        console.log('#used plan properties: ' + planProperties.length);
 
-        const runReturn = await PlanRunModel.findOne({ _id: runModel._id }).populate('hard_properties');
-        console.log(runReturn);
+        const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, run);
+        const propNames: string[] = await propertyChecker.executeRun();
+        // console.log('Sat Properties: ');
+        // console.log(propNames);
+        // propertyChecker.tidyUp();
+
+         // TODO find better way to write this
+         const data = await PlanRunModel.updateOne({ _id: run._id},
+            { $set: { log: run.log, planPath: run.planPath, status: Status.finished, satPlanProperties: propNames} });
+        // console.log(data);
+
+        const runReturn = await PlanRunModel.findOne({ _id: runModel._id }).populate('planProperties').populate('explanationRuns');
+        // console.log(runReturn);
         res.send({
             status: true,
             message: 'run successful',
@@ -57,18 +74,18 @@ plannerRouter.post('/plan', async (req, res) => {
         });
     }
     catch (ex) {
+        console.warn(ex.message);
         res.send(ex.message);
     }
 });
 
 plannerRouter.post('/mugs/:id', async (req, res) => {
     try {
-        const id =  mongoose.Types.ObjectId(req.params.id);
-        const planRunModel = await PlanRunModel.findOne({ _id: id}).populate('project');
+        const planRunId =  mongoose.Types.ObjectId(req.params.id);
+        const planRunModel = await PlanRunModel.findOne({ _id: planRunId}).populate('project');
         if (!planRunModel) { return res.status(404).send({ message: 'no run found' }); }
         const planRun: PlanRun = planRunModel.toJSON() as PlanRun;
 
-        console.log(req.body);
         const explanationRunModel = new ExplanationRunModel({
             name: req.body.name,
             status: Status.pending,
@@ -76,30 +93,40 @@ plannerRouter.post('/mugs/:id', async (req, res) => {
             planProperties: req.body.planProperties,
             hardGoals: req.body.hardGoals,
             softGoals: req.body.softGoals,
+            planRun: planRunId,
         });
         if (!explanationRunModel) {
             console.log('project ERROR');
             return res.status(403).send('run could not be stored');
         }
         const saveResult = await explanationRunModel.save();
-        console.log(saveResult);
+
         const run: ExplanationRun = req.body  as ExplanationRun;
-        run._id = explanationRunModel._id;
+        run._id = explanationRunModel.id;
 
         const planner = new ExplanationCall(experimentsRootPath, planRun.project, run);
-        await planner.run_planner_python_shell();
+        planner.executeRun().then( async () => {
+            console.log('Update result');
+            // set result file path
+            const returnData = await ExplanationRunModel.updateOne({ _id: run._id},
+                { $set: { result: run.result, log: run.log, status: Status.finished} });
 
-        // TODO find better way to write this
-        const data = await PlanRunModel.updateOne({ _id: run._id},
-            { $set: { result: run.result, log: run.log, status: Status.finished} });
-        console.log(data);
+            const newExpRunDoc = await ExplanationRunModel.findOne({ _id: run._id});
+            const newExpRun: ExplanationRun = newExpRunDoc?.toJSON() as ExplanationRun;
+            // console.log('---------------- EXPLANATION ----------------------');
+            // console.log(newExpRun);
+            // console.log('---------------- EXPLANATION ----------------------');
+            await PlanRunModel.updateOne({ _id: planRunId}, { $set: { explanationRuns: planRun.explanationRuns.concat(newExpRun)}});
 
-        const runReturn = await PlanRunModel.findOne({ _id: explanationRunModel._id }).populate('hard_properties').populate('soft_properties');
-        console.log(runReturn);
-        res.send({
-            status: true,
-            message: 'run successful',
-            data: runReturn,
+            // return the plan run with new questionRun elem
+            const runReturn = await PlanRunModel.findOne({ _id: planRunId}).populate('planProperties').populate('explanationRuns');
+            // console.log('---------------- PLAN RUN RETURN ----------------------');
+            // console.log(runReturn?.toString());
+            res.send({
+                status: true,
+                message: 'run successful',
+                data: runReturn,
+            });
         });
     }
     catch (ex) {

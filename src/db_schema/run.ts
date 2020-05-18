@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { PddlFile, PddlFileModel, PddlFileSchema } from './pddl_file';
+import { File, FileModel, FileSchema } from './file';
 import { PlanProperty } from './plan_property';
 import { Project } from './project';
 
@@ -35,6 +35,7 @@ export interface  ExplanationRun{
     softGoals: Goal[];
     log: string;
     result: string;
+    planRun: string;
 }
 
 export interface  PlanRun{
@@ -46,7 +47,8 @@ export interface  PlanRun{
     planProperties: PlanProperty[];
     hardGoals: Goal[];
     log: string;
-    plan: string;
+    planPath: string;
+    satPlanProperties: string[];
     explanationRuns: ExplanationRun[];
     previousRun: string;
 }
@@ -63,9 +65,9 @@ const PlanRunSchema = new Schema({
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
     planProperties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
     hardGoals: [GoalSchema],
-    softGoals: [GoalSchema],
     log: { type: String, required: false},
-    plan: { type: String, required: false},
+    planPath: { type: String, required: false},
+    satPlanProperties: [{ type: String, required: false}],
     explanationRuns: [{ type: mongoose.Schema.Types.ObjectId, ref: 'explanation-run' }],
     previousRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
 });
@@ -79,7 +81,7 @@ const ExplanationRunSchema = new Schema({
     softGoals: [GoalSchema],
     log: { type: String, required: false},
     result: { type: String, required: false},
-    plan: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
+    planRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
 });
 
 export const PlanRunModel = mongoose.model('plan-run', PlanRunSchema);

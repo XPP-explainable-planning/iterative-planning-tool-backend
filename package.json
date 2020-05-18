@@ -5,8 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "test",
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/app.ts --inspect-brk",
-    "start2": "'ts-node' src/app.ts"
+    "run-debug": "nodemon --watch 'src/**/*.ts' --exec 'ts-node src/app.ts'",
+    "run": "nodemon --watch 'src/**/*.ts' --exec 'ts-node src/app.ts'",
+    "debug": "tsc; node --inspect-brk dist/out-tsc/app.js",
+    "debug2": "node --inspect-brk --require ts-node/register src/app.ts",
+    "start2": "'ts-node' src/app.ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
