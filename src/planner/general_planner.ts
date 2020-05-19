@@ -25,7 +25,7 @@ export class TranslatorCall{
 
     create_experiment_setup(): void {
 
-        const out = child.execSync(`mkdir ${this.runFolder}`);
+        const out = child.execSync(`mkdir -p ${this.runFolder}`);
         const domainFileName = path.basename(this.project.domainFile.path);
         const problemFileName = path.basename(this.project.problemFile.path);
 
@@ -105,7 +105,7 @@ export class PlannerCall {
 
     create_experiment_setup(): void {
 
-        const out = child.execSync(`mkdir ${this.runFolder}`);
+        const out = child.execSync(`mkdir -p ${this.runFolder}`);
         const domainFileName = path.basename(this.domainFile);
         const problemFileName = path.basename(this.problemFile);
 
