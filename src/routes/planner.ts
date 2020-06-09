@@ -1,11 +1,10 @@
-import { PlanRunModel } from './../db_schema/run';
 import { PlanPropertyModel, PlanProperty } from './../db_schema/plan_property';
 import { PropertyCheck } from './../planner/property_check';
 import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
 
-import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, Status } from '../db_schema/run';
+import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, RunStatus } from '../db_schema/run';
 import { ExplanationCall, PlanCall, PlannerCall } from '../planner/general_planner';
 import { experimentsRootPath } from '../settings';
 
@@ -29,7 +28,7 @@ plannerRouter.post('/plan', async (req, res) => {
         console.log(req.body);
         const runModel = new PlanRunModel({
             name: req.body.name,
-            status: Status.pending,
+            status: RunStatus.pending,
             type: req.body.type,
             project: req.body.project,
             planProperties: req.body.planProperties,
@@ -63,7 +62,7 @@ plannerRouter.post('/plan', async (req, res) => {
 
             // TODO find better way to write this
             const data = await PlanRunModel.updateOne({ _id: run._id},
-                { $set: { log: run.log, planPath: run.planPath, status: Status.finished, satPlanProperties: propNames} });
+                { $set: { log: run.log, planPath: run.planPath, status: RunStatus.finished, satPlanProperties: propNames} });
             // console.log(data);
 
             const runReturn = await PlanRunModel.findOne({ _id: runModel._id }).populate('planProperties').populate('explanationRuns');
@@ -75,9 +74,14 @@ plannerRouter.post('/plan', async (req, res) => {
             });
         }
         catch (ex) {
-            await PlanRunModel.deleteOne({_id: run._id});
+            const data = await PlanRunModel.updateOne({ _id: run._id},
+                { $set: {  status: RunStatus.failed} });
             console.warn(ex.message);
-            res.send(ex.message);
+            res.send({
+                status: true,
+                message: 'run failed',
+                data
+            });
         }
     }
     catch (ex) {
@@ -95,7 +99,7 @@ plannerRouter.post('/mugs/:id', async (req, res) => {
 
         const explanationRunModel = new ExplanationRunModel({
             name: req.body.name,
-            status: Status.pending,
+            status: RunStatus.pending,
             type: req.body.type,
             planProperties: req.body.planProperties,
             hardGoals: req.body.hardGoals,
@@ -116,7 +120,7 @@ plannerRouter.post('/mugs/:id', async (req, res) => {
             console.log('Update result');
             // set result file path
             const returnData = await ExplanationRunModel.updateOne({ _id: run._id},
-                { $set: { result: run.result, log: run.log, status: Status.finished} });
+                { $set: { result: run.result, log: run.log, status: RunStatus.finished} });
 
             const newExpRunDoc = await ExplanationRunModel.findOne({ _id: run._id});
             const newExpRun: ExplanationRun = newExpRunDoc?.toJSON() as ExplanationRun;

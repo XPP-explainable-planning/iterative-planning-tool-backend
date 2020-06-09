@@ -1,55 +1,30 @@
+import { RunStatus } from './run';
 import { Project } from './project';
-import { Domain, DomainSchema } from './domain';
 import mongoose, { Schema } from 'mongoose';
-import { File, FileSchema } from './file';
-
-interface Explanation {
-    question: string[];
-    answer: string[];
-}
-
-interface Plan {
-    goals: string[];
-    planFile: string;
-}
 
 export interface Demo {
+    _id: string;
     name: string;
-    summaryImage: string;
+    summaryImage?: string;
     project: Project;
     introduction: string;
-    explanations: Explanation[];
-    plans: Plan[];
-    trackRuns: boolean;
-    allowNewProperties: boolean; // TODO macht das Sinn?
+    status: RunStatus;
+    definition: string;
     maxRuns: number;
     maxQuestionSize: number;
-    allowQuestions: boolean;
+    public: boolean;
 }
-
-
-const ExplanationSchema = new Schema ({
-    question: [{ type: String}],
-    answer: [{ type: String}],
-});
-
-const PlanSchema = new Schema ({
-    goals: [{ type: String}],
-    planFile: { type: String },
-});
 
 const DemoSchema = new Schema({
     name: { type: String, required: true},
-    summaryImage: { type: String, required: true},
+    summaryImage: { type: String, required: false},
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
     introduction: { type: String, required: false},
-    explanations: [{ type: ExplanationSchema }],
-    plans: [{ type: PlanSchema }],
-    allowNewProperties: { type: Boolean, required: false},
+    status: { type: Number, required: true},
+    definition: { type: String, required: false},
     maxRuns: { type: Number, required: true},
     maxQuestionSize: { type: Number, required: true},
-    allowQuestions: { type: Boolean, required: false}, // last two for survey
-    trackRuns: { type: Boolean, required: false },
+    public: { type: Boolean, required: true},
 });
 
 export const DemoModel = mongoose.model('demo', DemoSchema);

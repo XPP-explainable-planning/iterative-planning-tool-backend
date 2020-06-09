@@ -1,4 +1,3 @@
-import { projectRouter } from './routes/project';
 
 console.log('-------- EXPLORE BACKEND ---------');
 
@@ -6,6 +5,7 @@ import HttpErrors from 'http-errors';
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import * as session from 'express-session';
 
 import logger from 'morgan';
 import  createError from 'http-errors';
@@ -13,6 +13,7 @@ import sassMiddleware from 'node-sass-middleware';
 
 import errorMiddleware from './middleware/error.middleware';
 
+import { projectRouter } from './routes/project';
 import { indexRouter } from './routes';
 import { pddlFileRouter } from './routes/pddl_file';
 import { planPropertyRouter } from './routes/plan_property';
@@ -33,6 +34,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
 app.use(sassMiddleware({
   src: path.join(__dirname, 'public'),
   dest: path.join(__dirname, 'public'),

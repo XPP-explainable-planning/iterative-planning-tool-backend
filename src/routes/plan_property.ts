@@ -66,10 +66,13 @@ planPropertyRouter.put('/:id', async (req, res) => {
 });
 
 planPropertyRouter.get('/', async (req, res) => {
+    if (req.query.projectId === undefined) {
+        return res.status(404).send({ message: 'no projectId specified' });
+    }
     const projectId =  mongoose.Types.ObjectId(req.query.projectId);
     const properties = await  PlanPropertyModel.find({ project: projectId});
     // console.log(properties.toString());
-    console.log('GET properties: #' + properties.length);
+    console.log('GET properties from project: ' + req.query.projectId + ': #' + properties.length);
     if (!properties) { return res.status(404).send({ message: 'not found properties' }); }
     res.send({
         data: properties

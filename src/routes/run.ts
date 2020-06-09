@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 
-import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, Status } from '../db_schema/run';
+import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, RunStatus } from '../db_schema/run';
 import { deleteResultFile } from '../planner/pddl_file_utils';
 
 
@@ -9,12 +9,12 @@ export const runRouter = express.Router();
 
 runRouter.get('/plan-run', async (req, res) => {
     // await PlanRunModel.deleteMany({});
-    console.log(req.query);
-    console.log('Run id: ' + req.query.projectId);
+    // console.log(req.query);
+    // console.log('Run id: ' + req.query.projectId);
     const projectId =  mongoose.Types.ObjectId(req.query.projectId);
     const runs = await PlanRunModel.find({ project: projectId}).populate('planProperties').populate('explanationRuns');
-    console.log('#runs: ' + runs.length);
-    console.log(runs)
+    // console.log('#runs: ' + runs.length);
+    // console.log(runs);
     if (!runs) { return res.status(404).send({ message: 'no run found' }); }
     res.send({
         data: runs

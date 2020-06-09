@@ -21,7 +21,7 @@ export class PropertyCheck {
     {
         this.runFolder = path.join(root, String(this.planRun.project._id));
 
-        child.execSync(`mkdir ${this.runFolder}`);
+        child.execSync(`mkdir -p ${this.runFolder}`);
 
         const domainFileName = path.basename(this.planRun.project.domainFile.path);
         const problemFileName = path.basename(this.planRun.project.problemFile.path);

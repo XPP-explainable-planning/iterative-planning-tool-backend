@@ -37,7 +37,7 @@ export class TranslatorCall{
 
     async executeRun(): Promise<void> {
 
-        const addArgs = [this.runFolder, '--build', 'release64','--translate' , `${this.runFolder}/domain.pddl`,
+        const addArgs = [this.runFolder, '--build', 'release64', '--translate' , `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`];
 
         const options = {
@@ -132,6 +132,9 @@ export class PlannerCall {
         const addArgs = [this.runFolder, '--build', 'release64', `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`, `${this.runFolder}/exp_setting.json`, ...this.plannerSetting];
 
+        console.log('Command:');
+        console.log(addArgs);
+
         const options = {
             mode: 'text',
             pythonPath: '/usr/bin/python3',
@@ -174,7 +177,7 @@ export class PlannerCall {
     }
 }
 
-const plannerSettingOptPlan = ['--search', 'astar(hmax())'];
+const plannerSettingOptPlan = ['--search', 'astar(lmcut())'];
 export class PlanCall extends PlannerCall{
 
     constructor(root: string, private run: PlanRun) {

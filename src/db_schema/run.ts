@@ -3,7 +3,7 @@ import { File, FileModel, FileSchema } from './file';
 import { PlanProperty } from './plan_property';
 import { Project } from './project';
 
-export enum Status {
+export enum RunStatus {
     pending,
     running,
     failed,
@@ -29,7 +29,7 @@ export interface  ExplanationRun{
     _id: string;
     name: string;
     type: RunType;
-    status: Status;
+    status: RunStatus;
     planProperties: PlanProperty[];
     hardGoals: Goal[];
     softGoals: Goal[];
@@ -42,7 +42,7 @@ export interface  PlanRun{
     _id: string;
     name: string;
     type: RunType;
-    status: Status;
+    status: RunStatus;
     project: Project;
     planProperties: PlanProperty[];
     hardGoals: Goal[];
