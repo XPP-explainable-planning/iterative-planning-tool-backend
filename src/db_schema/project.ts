@@ -6,6 +6,7 @@ import { DomainSchema, Domain } from './domain';
 export interface Project {
     _id: string;
     name: string;
+    user: string;
     domainFile: File;
     domainSpecification: File;
     problemFile: File;
@@ -16,6 +17,7 @@ export interface Project {
 
 const ProjectSchema = new Schema({
     name: { type: String, required: true},
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     domainFile: { type: FileSchema, required: true},
     domainSpecification: { type: FileSchema, required: true},
     problemFile: { type: FileSchema, required: true},

@@ -1,3 +1,5 @@
+import { auth } from './middleware/auth';
+import { userRouter } from './routes/user';
 
 console.log('-------- EXPLORE BACKEND ---------');
 
@@ -43,6 +45,10 @@ app.use(sassMiddleware({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/api/users', userRouter);
+app.use('/api/demo', demoRouter);
+
+app.use(auth);
 app.use('/', indexRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/results', express.static(path.join(__dirname, 'results')));
@@ -52,7 +58,7 @@ app.use('/api/plan-property', planPropertyRouter);
 app.use('/api/project', projectRouter);
 app.use('/api/planner', plannerRouter);
 app.use('/api/run', runRouter);
-app.use('/api/demo', demoRouter);
+
 
 console.log('Static path: ');
 console.log(path.join(__dirname, 'uploads'));

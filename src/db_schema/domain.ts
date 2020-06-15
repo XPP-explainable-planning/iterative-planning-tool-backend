@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface Domain {
+export interface Domain extends Document{
     _id: string;
     name: string;
     definition: string;

@@ -1,10 +1,11 @@
 import { RunStatus } from './run';
 import { Project } from './project';
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface Demo {
+export interface Demo  extends Document{
     _id: string;
     name: string;
+    user: string;
     summaryImage?: string;
     project: Project;
     introduction: string;
@@ -17,6 +18,7 @@ export interface Demo {
 
 const DemoSchema = new Schema({
     name: { type: String, required: true},
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     summaryImage: { type: String, required: false},
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
     introduction: { type: String, required: false},

@@ -39,6 +39,7 @@ projectRouter.post('/', async (req, res) => {
         // console.log(req.body);
         const projectModel = new ProjectModel({
             name: req.body.name,
+            user: req.user._id,
             description: req.body.description,
             domainFile: req.body.domainFile,
             problemFile: req.body.problemFile,
@@ -122,7 +123,7 @@ projectRouter.post('/:id', async (req, res) => {
 
 projectRouter.get('', async (req, res) => {
     console.log('GET project');
-    const properties = await ProjectModel.find();
+    const properties = await ProjectModel.find({user: req.user._id});
     if (!properties) { return res.status(404).send({ message: 'not found project' }); }
     res.send({
         data: properties

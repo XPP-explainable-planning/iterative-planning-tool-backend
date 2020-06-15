@@ -1,3 +1,4 @@
+import { authForward } from './../middleware/auth';
 import { RunStatus } from './../db_schema/run';
 import { demoGenerator, experimentsRootPath } from './../settings';
 import { PlanPropertyModel, PlanProperty } from './../db_schema/plan_property';
@@ -6,10 +7,11 @@ import { Project } from './../db_schema/project';
 import express from 'express';
 import mongoose from 'mongoose';
 import { DemoComputation, cancelDemoComputation } from '../planner/demo-computation';
+import { auth } from '../middleware/auth';
 
 export const demoRouter = express.Router();
 
-demoRouter.post('/', async (req, res) => {
+demoRouter.post('/', auth, async (req, res) => {
 
     console.log(req.body);
     let demoDoc: mongoose.Document;
@@ -17,6 +19,7 @@ demoRouter.post('/', async (req, res) => {
         console.log('-------------------- >  CREATE Demo');
         const demoModel = new DemoModel({
             name: req.body.name,
+            user: req.user._id,
             summaryImage: req.body.summaryImage,
             project: req.body.project,
             introduction: req.body.introduction,
@@ -73,7 +76,7 @@ demoRouter.post('/', async (req, res) => {
     }
 });
 
-demoRouter.post('/cancel/:id', async (req, res) => {
+demoRouter.post('/cancel/:id', auth, async (req, res) => {
 
     console.log('Cancel id: ' + req.params.id);
     const id = mongoose.Types.ObjectId(req.params.id);
@@ -102,28 +105,30 @@ demoRouter.post('/cancel/:id', async (req, res) => {
         });
 });
 
-demoRouter.get('', async (req, res) => {
-    let demos;
+demoRouter.get('', authForward, async (req, res) => {
 
-    if (req.query.projectId !== undefined) {
-        const projectId =  mongoose.Types.ObjectId(req.query.projectId);
-        demos = await DemoModel.find({ project: projectId});
-    } else {
-        // console.log('Get all demos');
-        demos = await DemoModel.find();
+    try {
+        let demos;
+        if (req.user) {
+            demos = await DemoModel.find();
+            // demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
+        } else {
+            demos = await DemoModel.find({ public: true});
+        }
+
+        if (!demos) { return res.status(404).send({ message: 'not found demo' }); }
+        console.log('GET demos: #' + demos.length);
+
+        res.send({
+            data: demos
+        });
+    } catch (ex) {
+        res.send(ex.message);
     }
-    if (!demos) { return res.status(404).send({ message: 'not found demo' }); }
-    console.log('GET demos: #' + demos.length);
-    console.log(demos);
-    // console.log(demos);
-    res.send({
-        data: demos
-    });
-
 });
 
 
-demoRouter.get('/:id', async (req, res) => {
+demoRouter.get('/:id', authForward, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     const demo = await DemoModel.findOne({ _id: id });
     if (!demo) { return res.status(404).send({ message: 'not found demo' }); }
@@ -133,7 +138,7 @@ demoRouter.get('/:id', async (req, res) => {
 
 });
 
-demoRouter.delete('/:id', async (req, res) => {
+demoRouter.delete('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('DELETE: demo ' + id);
     const demo = await DemoModel.deleteOne({ _id: id });
