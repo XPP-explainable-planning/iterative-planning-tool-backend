@@ -1,13 +1,13 @@
+import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { authForward } from './../middleware/auth';
 import { RunStatus } from './../db_schema/run';
-import { demoGenerator, experimentsRootPath } from './../settings';
 import { PlanPropertyModel, PlanProperty } from './../db_schema/plan_property';
 import { DemoModel, Demo } from './../db_schema/demo';
-import { Project } from './../db_schema/project';
 import express from 'express';
 import mongoose from 'mongoose';
 import { DemoComputation, cancelDemoComputation } from '../planner/demo-computation';
 import { auth } from '../middleware/auth';
+import { settings } from 'cluster';
 
 export const demoRouter = express.Router();
 
@@ -17,6 +17,9 @@ demoRouter.post('/', auth, async (req, res) => {
     let demoDoc: mongoose.Document;
     try {
         console.log('-------------------- >  CREATE Demo');
+
+        const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
+
         const demoModel = new DemoModel({
             name: req.body.name,
             user: req.user._id,
@@ -24,9 +27,7 @@ demoRouter.post('/', auth, async (req, res) => {
             project: req.body.project,
             introduction: req.body.introduction,
             status: RunStatus.pending,
-            maxRuns: req.body.maxRuns,
-            maxQuestionSize: req.body.maxQuestionSize,
-            public: req.body.public,
+            settings: settingsId,
         });
         if (!demoModel) {
             return res.status(403).send('create demo failed');
@@ -116,6 +117,15 @@ demoRouter.get('', authForward, async (req, res) => {
             demos = await DemoModel.find({ public: true});
         }
 
+        // for (const p of demos) {
+        //     const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
+
+        //     p.settings = settingsId;
+
+        //     await p.save();
+        // }
+
+
         if (!demos) { return res.status(404).send({ message: 'not found demo' }); }
         console.log('GET demos: #' + demos.length);
 
@@ -125,6 +135,28 @@ demoRouter.get('', authForward, async (req, res) => {
     } catch (ex) {
         res.send(ex.message);
     }
+});
+
+demoRouter.put('/:id', authForward, async (req, res) => {
+    const id = mongoose.Types.ObjectId(req.params.id);
+    const updateDemo: Demo = req.body;
+
+    const demo: Demo | null = await DemoModel.findOne({ _id: id });
+    if (!demo) { return res.status(404).send({ message: 'not found demo' }); }
+
+    demo.maxRuns = updateDemo.maxRuns;
+    demo.allowQuestions = updateDemo.allowQuestions;
+    demo.maxQuestionSize = updateDemo.maxQuestionSize;
+    demo.public = updateDemo.public;
+
+    const saverResult = await demo.save();
+    if (!saverResult) { return res.status(404).send({ message: 'update failed' }); }
+
+    console.log('DEMO updated');
+    res.send({
+        data: demo
+    });
+
 });
 
 

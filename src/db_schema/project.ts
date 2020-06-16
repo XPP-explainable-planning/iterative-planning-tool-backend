@@ -1,9 +1,10 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import { File, FileModel, FileSchema } from './file';
 import { PlanProperty } from './plan_property';
 import { DomainSchema, Domain } from './domain';
+import { ExecutionSettings } from './execution_settings';
 
-export interface Project {
+export interface Project extends Document{
     _id: string;
     name: string;
     user: string;
@@ -13,6 +14,7 @@ export interface Project {
     description: string;
     taskSchema: string;
     properties: PlanProperty[];
+    settings: ExecutionSettings;
 }
 
 const ProjectSchema = new Schema({
@@ -23,8 +25,8 @@ const ProjectSchema = new Schema({
     problemFile: { type: FileSchema, required: true},
     description: { type: String, required: true},
     taskSchema: { type: String, required: false},
-    // properties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
+    settings: { type: mongoose.Schema.Types.ObjectId, ref: 'execution-settings' },
 });
 
-export const ProjectModel = mongoose.model('project', ProjectSchema);
+export const ProjectModel = mongoose.model<Project>('project', ProjectSchema);
 

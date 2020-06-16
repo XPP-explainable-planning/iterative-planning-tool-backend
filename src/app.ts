@@ -1,3 +1,4 @@
+import { executionSettingsRouter } from './routes/execution_settings';
 import { auth } from './middleware/auth';
 import { userRouter } from './routes/user';
 
@@ -58,6 +59,7 @@ app.use('/api/plan-property', planPropertyRouter);
 app.use('/api/project', projectRouter);
 app.use('/api/planner', plannerRouter);
 app.use('/api/run', runRouter);
+app.use('/api/settings', executionSettingsRouter)
 
 
 console.log('Static path: ');

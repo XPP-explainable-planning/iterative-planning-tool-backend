@@ -8,6 +8,8 @@ import { ProjectModel } from '../db_schema/project';
 import { TranslatorCall } from '../planner/general_planner';
 import { experimentsRootPath } from '../settings';
 import { deleteUploadFile } from '../planner/pddl_file_utils';
+import { ExecutionSettingsModel } from '../db_schema/execution_settings';
+import { settings } from 'cluster';
 
 export const projectRouter = express.Router();
 
@@ -36,7 +38,9 @@ async function computeAndStoreSchema(project: Project): Promise<Project | null> 
 projectRouter.post('/', async (req, res) => {
     try {
         console.log('POST Project');
-        // console.log(req.body);
+
+        const settingsId = await ExecutionSettingsModel.createProjectDefaultSettings();
+
         const projectModel = new ProjectModel({
             name: req.body.name,
             user: req.user._id,
@@ -44,6 +48,7 @@ projectRouter.post('/', async (req, res) => {
             domainFile: req.body.domainFile,
             problemFile: req.body.problemFile,
             domainSpecification: req.body.domainSpecification,
+            settings: settingsId
         });
         if (!projectModel) {
             console.log('project ERROR');
@@ -92,6 +97,7 @@ projectRouter.put('/:id', async (req, res) => {
 
 
 projectRouter.post('/:id', async (req, res) => {
+    // TODO implement settings copy
     try {
         console.log('POST copy project id: ' + req.params.id);
         const refId = mongoose.Types.ObjectId(req.params.id);
@@ -123,10 +129,21 @@ projectRouter.post('/:id', async (req, res) => {
 
 projectRouter.get('', async (req, res) => {
     console.log('GET project');
-    const properties = await ProjectModel.find({user: req.user._id});
-    if (!properties) { return res.status(404).send({ message: 'not found project' }); }
+    const projects = await ProjectModel.find({ user: req.user._id});
+    // const projects = await ProjectModel.find();
+
+    // for (const p of projects) {
+    //     console.log('create settings');
+    //     const settingsId = await ExecutionSettingsModel.createProjectDefaultSettings();
+
+    //     p.settings = settingsId;
+
+    //     await p.save();
+    // }
+
+    if (!projects) { return res.status(404).send({ message: 'not found project' }); }
     res.send({
-        data: properties
+        data: projects
     });
 
 });

@@ -1,6 +1,7 @@
 import { RunStatus } from './run';
 import { Project } from './project';
 import mongoose, { Schema, Document } from 'mongoose';
+import { ExecutionSettings } from './execution_settings';
 
 export interface Demo  extends Document{
     _id: string;
@@ -11,9 +12,7 @@ export interface Demo  extends Document{
     introduction: string;
     status: RunStatus;
     definition: string;
-    maxRuns: number;
-    maxQuestionSize: number;
-    public: boolean;
+    settings: ExecutionSettings;
 }
 
 const DemoSchema = new Schema({
@@ -24,9 +23,7 @@ const DemoSchema = new Schema({
     introduction: { type: String, required: false},
     status: { type: Number, required: true},
     definition: { type: String, required: false},
-    maxRuns: { type: Number, required: true},
-    maxQuestionSize: { type: Number, required: true},
-    public: { type: Boolean, required: true},
+    settings: { type: mongoose.Schema.Types.ObjectId, ref: 'execution-settings' },
 });
 
-export const DemoModel = mongoose.model('demo', DemoSchema);
+export const DemoModel = mongoose.model<Demo>('demo', DemoSchema);
