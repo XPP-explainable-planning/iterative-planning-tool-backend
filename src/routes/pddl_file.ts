@@ -12,7 +12,9 @@ const imgPort = 'http://localhost:3000';
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        console.log(__dirname);
+        console.log('Storage file:');
+        console.log(file);
+        // console.log(__dirname);
         cb(null, path.join(path.resolve(__dirname, '..'), 'uploads'));
     },
     filename: (req, file, cb) => {
@@ -41,6 +43,8 @@ const upload = multer({
 pddlFileRouter.post('/', upload.single('content'), async (req, res) => {
     try {
         console.log('UPLOAD FILE');
+        console.log(req.body);
+        console.log(req.file);
         // console.log(req.body);
         const file = new FileModel({
             name: req.body.name,

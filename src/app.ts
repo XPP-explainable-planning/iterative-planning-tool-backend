@@ -49,9 +49,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users', userRouter);
 app.use('/api/demo', demoRouter);
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(auth);
 app.use('/', indexRouter);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/results', express.static(path.join(__dirname, 'results')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/pddl-file', pddlFileRouter);

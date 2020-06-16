@@ -7,23 +7,60 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { DemoComputation, cancelDemoComputation } from '../planner/demo-computation';
 import { auth } from '../middleware/auth';
-import { settings } from 'cluster';
+
+import multer from 'multer';
+import path from 'path';
 
 export const demoRouter = express.Router();
 
-demoRouter.post('/', auth, async (req, res) => {
+const imgPort = 'http://localhost:3000';
 
-    console.log(req.body);
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        console.log('Storage file:');
+        console.log(file);
+        cb(null, path.join(path.resolve(__dirname, '..'), 'uploads'));
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + file.originalname);
+    },
+});
+
+const fileFilter = (req: any, file: any, cb: (arg0: null, arg1: boolean) => void) => {
+    console.log('File Filter');
+    console.log(file);
+    cb(null, true);
+    // if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+    //     cb(null, true);
+    // } else {
+    //     cb(null, false);
+    // }
+};
+
+const upload = multer({
+    storage,
+    fileFilter
+});
+
+demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
+
     let demoDoc: mongoose.Document;
     try {
         console.log('-------------------- >  CREATE Demo');
+        console.log(req.body);
+        console.log(req.file);
 
         const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
+
+        let imageFilePath = '';
+        if (req.file) {
+            imageFilePath = imgPort + '/uploads/' + req.file.filename;
+        }
 
         const demoModel = new DemoModel({
             name: req.body.name,
             user: req.user._id,
-            summaryImage: req.body.summaryImage,
+            summaryImage: imageFilePath,
             project: req.body.project,
             introduction: req.body.introduction,
             status: RunStatus.pending,
@@ -44,26 +81,26 @@ demoRouter.post('/', auth, async (req, res) => {
         const demo: Demo = demoDoc.toJSON() as Demo;
         // console.log(demo);
 
-        const planPropertiesDoc = await PlanPropertyModel.find({ project: demo.project._id, isUsed: true });
-        const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
+        // const planPropertiesDoc = await PlanPropertyModel.find({ project: demo.project._id, isUsed: true });
+        // const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
 
-        DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
-        const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
-        console.log('DEMO: generate ...');
-        demoGen.executeRun().then(
-            async (demoFolder) => {
-                console.log('DEMO: generate successful');
-                const updatedDemoDoc = await DemoModel.updateOne({ _id: demo._id},
-                    { $set: { definition: demoFolder, status: RunStatus.finished } });
-                console.log(updatedDemoDoc);
-                // demoGen.tidyUp();
-            },
-            async (err) => {
-                console.log('DEMO: generate failed: ' + err);
-                await DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.failed } });
-                // demoGen.tidyUp();
-            }
-        );
+        // DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
+        // const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
+        // console.log('DEMO: generate ...');
+        // demoGen.executeRun().then(
+        //     async (demoFolder) => {
+        //         console.log('DEMO: generate successful');
+        //         const updatedDemoDoc = await DemoModel.updateOne({ _id: demo._id},
+        //             { $set: { definition: demoFolder, status: RunStatus.finished } });
+        //         console.log(updatedDemoDoc);
+        //         // demoGen.tidyUp();
+        //     },
+        //     async (err) => {
+        //         console.log('DEMO: generate failed: ' + err);
+        //         await DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.failed } });
+        //         // demoGen.tidyUp();
+        //     }
+        // );
 
         res.send({
             status: true,
