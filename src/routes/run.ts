@@ -77,8 +77,12 @@ runRouter.delete('/plan-run/:id', async (req, res) => {
 
     const planRun: PlanRun = run?.toJSON() as PlanRun;
     // delete corresponding log files
-    deleteResultFile(planRun.planPath);
-    deleteResultFile(planRun.log);
+    if (planRun.planPath) {
+        deleteResultFile(planRun.planPath);
+    }
+    if (planRun.log) {
+        deleteResultFile(planRun.log);
+    }
 
     res.send({
         data: run
