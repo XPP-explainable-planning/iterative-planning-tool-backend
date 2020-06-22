@@ -13,7 +13,7 @@ export interface Demo  extends Document{
     status: RunStatus;
     definition: string;
     settings: ExecutionSettings;
-    animationSettings: string;
+    animationSettings?: string;
 }
 
 const DemoSchema = new Schema({
@@ -25,7 +25,7 @@ const DemoSchema = new Schema({
     status: { type: Number, required: true},
     definition: { type: String, required: false},
     settings: { type: mongoose.Schema.Types.ObjectId, ref: 'execution-settings' },
-    animationSettings: { type: String, required: false}
+    animationSettings: { type: String, required: false},
 });
 
 export const DemoModel = mongoose.model<Demo>('demo', DemoSchema);
