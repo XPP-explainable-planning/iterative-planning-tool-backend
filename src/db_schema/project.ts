@@ -15,6 +15,7 @@ export interface Project extends Document{
     taskSchema: string;
     properties: PlanProperty[];
     settings: ExecutionSettings;
+    animationSettings: string;
 }
 
 const ProjectSchema = new Schema({
@@ -26,6 +27,7 @@ const ProjectSchema = new Schema({
     description: { type: String, required: true},
     taskSchema: { type: String, required: false},
     settings: { type: mongoose.Schema.Types.ObjectId, ref: 'execution-settings' },
+    animationSettings: { type: String, required: false}
 });
 
 export const ProjectModel = mongoose.model<Project>('project', ProjectSchema);
