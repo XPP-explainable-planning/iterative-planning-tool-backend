@@ -1,3 +1,4 @@
+import { ProjectModel, Project } from './../db_schema/project';
 import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { authForward } from './../middleware/auth';
 import { RunStatus } from './../db_schema/run';
@@ -52,6 +53,8 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 
         const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
 
+        const project = await ProjectModel.findById(req.body.project);
+
         let imageFilePath = '';
         if (req.file) {
             imageFilePath = imgPort + '/uploads/' + req.file.filename;
@@ -65,6 +68,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
             introduction: req.body.introduction,
             status: RunStatus.pending,
             settings: settingsId,
+            animationSettings: project?.animationSettings
         });
         if (!demoModel) {
             return res.status(403).send('create demo failed');
@@ -81,26 +85,26 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         const demo: Demo = demoDoc.toJSON() as Demo;
         // console.log(demo);
 
-        // const planPropertiesDoc = await PlanPropertyModel.find({ project: demo.project._id, isUsed: true });
-        // const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
+        const planPropertiesDoc = await PlanPropertyModel.find({ project: demo.project._id, isUsed: true });
+        const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
 
-        // DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
-        // const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
-        // console.log('DEMO: generate ...');
-        // demoGen.executeRun().then(
-        //     async (demoFolder) => {
-        //         console.log('DEMO: generate successful');
-        //         const updatedDemoDoc = await DemoModel.updateOne({ _id: demo._id},
-        //             { $set: { definition: demoFolder, status: RunStatus.finished } });
-        //         console.log(updatedDemoDoc);
-        //         // demoGen.tidyUp();
-        //     },
-        //     async (err) => {
-        //         console.log('DEMO: generate failed: ' + err);
-        //         await DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.failed } });
-        //         // demoGen.tidyUp();
-        //     }
-        // );
+        DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
+        const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
+        console.log('DEMO: generate ...');
+        demoGen.executeRun().then(
+            async (demoFolder) => {
+                console.log('DEMO: generate successful');
+                const updatedDemoDoc = await DemoModel.updateOne({ _id: demo._id},
+                    { $set: { definition: demoFolder, status: RunStatus.finished } });
+                console.log(updatedDemoDoc);
+                // demoGen.tidyUp();
+            },
+            async (err) => {
+                console.log('DEMO: generate failed: ' + err);
+                await DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.failed } });
+                // demoGen.tidyUp();
+            }
+        );
 
         res.send({
             status: true,
@@ -154,17 +158,19 @@ demoRouter.get('', authForward, async (req, res) => {
             demos = await DemoModel.find({ public: true});
         }
 
-        // for (const p of demos) {
-        //     const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
+        // for (const demo of demos) {
+        //     const project: Project | null = await ProjectModel.findById(demo.project);
 
-        //     p.settings = settingsId;
+        //     console.log(project);
+        //     demo.animationSettings = project?.animationSettings;
 
-        //     await p.save();
+        //     await demo.save();
         // }
 
 
         if (!demos) { return res.status(404).send({ message: 'not found demo' }); }
         console.log('GET demos: #' + demos.length);
+        console.log(demos);
 
         res.send({
             data: demos
