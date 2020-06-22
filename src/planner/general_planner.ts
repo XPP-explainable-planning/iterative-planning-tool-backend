@@ -9,7 +9,12 @@ import { PlanProperty } from '../db_schema/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
 import { writeFileSync } from 'fs';
-import { PythonShell } from 'python-shell';
+import { PythonShell, PythonShellError } from 'python-shell';
+
+interface PlanningResult{
+    planFound: boolean;
+    log: string[];
+}
 
 export class TranslatorCall{
 
@@ -127,7 +132,7 @@ export class PlannerCall {
         return { hard_goals: hardGoals, plan_properties: properties, soft_goals: softGoals};
     }
 
-    async executeRun(): Promise<void> {
+    async executeRun(): Promise<boolean> {
 
         const addArgs = [this.runFolder, '--build', 'release64', `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`, `${this.runFolder}/exp_setting.json`, ...this.plannerSetting];
@@ -144,24 +149,31 @@ export class PlannerCall {
             env: { SPOT_BIN_PATH: spot, LTL2HAO_PATH: ltlkit},
         };
 
-        const results = await this.pythonShellCall(options);
-        // console.log('planner finished');
-        // console.log(results.join('\n'));
-        writeFileSync(path.join(resultsPath, `out_${this.runId}.log`), results.join('\n'), 'utf8');
+        const plannerResults : PlanningResult = await this.pythonShellCall(options);
 
-        this.copy_experiment_results();
+        if (plannerResults.planFound) {
+            writeFileSync(path.join(resultsPath, `out_${this.runId}.log`), plannerResults.log.join('\n'), 'utf8');
+            this.copy_experiment_results();
+        }
+
+
+        return plannerResults.planFound;
     }
 
-    pythonShellCall(options: any): Promise<string[]> {
-        const p: Promise<string[]> = new Promise((resolve, reject) => {
+    pythonShellCall(options: any): Promise<PlanningResult> {
+        const p: Promise<PlanningResult> = new Promise((resolve, reject) => {
             // @ts-ignore
-            PythonShell.run('run_FD.py', options,  (err: any, results: any) => {
+            PythonShell.run('run_FD.py', options,  (err: PythonShellError, results: any) => {
                 if (err) {
+                    if (err.exitCode === 12){
+                        resolve({ planFound: false, log: []});
+                        return;
+                    }
                     console.warn(err);
                     reject(err);
                 }
                 else {
-                    resolve(results);
+                    resolve({ planFound: true, log: results});
                 }
             });
         });

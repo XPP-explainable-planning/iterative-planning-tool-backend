@@ -45,28 +45,31 @@ plannerRouter.post('/plan', async (req, res) => {
 
         try {
             const planner = new PlanCall(experimentsRootPath, run);
-            await planner.executeRun();
+            const planFound = await planner.executeRun();
             planner.tidyUp();
-            console.log('Plan computed');
+            console.log('Plan computed: ' + planFound);
 
-            // check which plan properties are satisfied by the plan
-            const planPropertiesDoc = await PlanPropertyModel.find({ project: run.project._id, isUsed: true });
-            const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
-            console.log('#used plan properties: ' + planProperties.length);
+            let propNames: string[] = [];
+            if (planFound) {
+                // check which plan properties are satisfied by the plan
+                const planPropertiesDoc = await PlanPropertyModel.find({ project: run.project._id, isUsed: true });
+                const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
+                console.log('#used plan properties: ' + planProperties.length);
 
-            const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, run);
-            const propNames: string[] = await propertyChecker.executeRun();
-            // console.log('Sat Properties: ');
-            // console.log(propNames);
-            propertyChecker.tidyUp();
+                const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, run);
+                propNames = await propertyChecker.executeRun();
+                // console.log('Sat Properties: ');
+                // console.log(propNames);
+                propertyChecker.tidyUp();
+            }
+
 
             // TODO find better way to write this
             const data = await PlanRunModel.updateOne({ _id: run._id},
                 { $set: { log: run.log, planPath: run.planPath, status: RunStatus.finished, satPlanProperties: propNames} });
-            // console.log(data);
 
             const runReturn = await PlanRunModel.findOne({ _id: runModel._id }).populate('planProperties').populate('explanationRuns');
-            // console.log(runReturn);
+
             res.send({
                 status: true,
                 message: 'run successful',

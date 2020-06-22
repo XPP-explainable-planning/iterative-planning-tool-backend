@@ -131,6 +131,7 @@ projectRouter.get('', async (req, res) => {
     console.log('GET project');
     const projects = await ProjectModel.find({ user: req.user._id});
     // const projects = await ProjectModel.find();
+    // const projects = await ProjectModel.find();
 
     // for (const p of projects) {
     //     console.log('create settings');
