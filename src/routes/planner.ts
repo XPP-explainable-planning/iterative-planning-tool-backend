@@ -64,9 +64,14 @@ plannerRouter.post('/plan', async (req, res) => {
             }
 
 
-            // TODO find better way to write this
             const data = await PlanRunModel.updateOne({ _id: run._id},
-                { $set: { log: run.log, planPath: run.planPath, status: RunStatus.finished, satPlanProperties: propNames} });
+                { $set: {
+                    log: run.log,
+                     planPath: run.planPath,
+                     status: planFound ? RunStatus.finished : RunStatus.noSolution,
+                     satPlanProperties: propNames
+                    }
+                });
 
             const runReturn = await PlanRunModel.findOne({ _id: runModel._id }).populate('planProperties').populate('explanationRuns');
 

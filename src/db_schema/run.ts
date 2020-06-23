@@ -7,7 +7,8 @@ export enum RunStatus {
     pending,
     running,
     failed,
-    finished
+    finished,
+    noSolution,
 }
 
 export enum GoalType {
