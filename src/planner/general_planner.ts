@@ -8,7 +8,7 @@ import { PlanRun, ExplanationRun, Goal } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { PythonShell, PythonShellError } from 'python-shell';
 
 interface PlanningResult{
@@ -198,11 +198,16 @@ export class PlanCall extends PlannerCall{
     }
 
     copy_experiment_results(): void {
-        child.spawnSync('cp', [path.join(this.runFolder, 'sas_plan'),
-            path.join(resultsPath, `plan_${this.runId}.sas`)]);
+        // child.spawnSync('cp', [path.join(this.runFolder, 'sas_plan'),
+        //     path.join(resultsPath, `plan_${this.runId}.sas`)]);
+        // this.run.planPath = serverResultsPath + `/plan_${this.runId}.sas`;
+
+        const buffer: Buffer = readFileSync(path.join(this.runFolder, 'sas_plan'));
+        this.run.planString = buffer.toString('utf8');
+        // console.log('Plan');
+        // console.log(this.run.planString);
 
         this.run.log = serverResultsPath + `/out_${this.runId}.log`;
-        this.run.planPath = serverResultsPath + `/plan_${this.runId}.sas`;
     }
 }
 
@@ -216,10 +221,16 @@ export class ExplanationCall extends PlannerCall{
     }
 
     copy_experiment_results(): void {
-        child.spawnSync('cp', [path.join(this.runFolder, 'mugs.json'),
-            path.join(resultsPath, `mugs_${this.runId}.json`)]);
+        // child.spawnSync('cp', [path.join(this.runFolder, 'mugs.json'),
+        //     path.join(resultsPath, `mugs_${this.runId}.json`)]);
 
-        this.run.result = serverResultsPath + `/mugs_${this.runId}.json`;
+        // this.run.result = serverResultsPath + `/mugs_${this.runId}.json`;
+
+        const buffer: Buffer = readFileSync(path.join(this.runFolder, 'mugs.json'));
+        this.run.result = buffer.toString('utf8');
+        console.log('MUGS');
+        console.log(this.run.result);
+
         this.run.log = serverResultsPath + `/out_${this.runId}.log`;
     }
 }

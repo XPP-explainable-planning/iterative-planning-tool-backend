@@ -26,16 +26,20 @@ export class PropertyCheck {
         const domainFileName = path.basename(this.planRun.project.domainFile.path);
         const problemFileName = path.basename(this.planRun.project.problemFile.path);
         const taskSchemaFileName = path.basename(this.planRun.project.taskSchema);
-        const planFileName = path.basename(this.planRun.planPath);
+        const planFileName = 'plan.sas';
 
         child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
         child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
         child.execSync(`cp ${path.join(resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'schema.json')}`);
-        child.execSync(`cp ${path.join(resultsPath, planFileName)} ${path.join(this.runFolder, 'plan.sas')}`);
+        // child.execSync(`cp ${path.join(resultsPath, planFileName)} ${path.join(this.runFolder, 'plan.sas')}`);
 
 
         writeFileSync(path.join(this.runFolder, 'exp_setting.json'),
             JSON.stringify(this.generate_experiment_setting()),
+            'utf8');
+
+        writeFileSync(path.join(this.runFolder, 'plan.sas'),
+            this.planRun.planString,
             'utf8');
 
         console.log('plan property checker initialized');

@@ -26,7 +26,7 @@ plannerRouter.post('/plan', async (req, res) => {
     console.log('Compute Plan');
     try {
         console.log(req.body);
-        const runModel = new PlanRunModel({
+        const planRun: PlanRun = new PlanRunModel({
             name: req.body.name,
             status: RunStatus.pending,
             type: req.body.type,
@@ -35,60 +35,62 @@ plannerRouter.post('/plan', async (req, res) => {
             hardGoals: req.body.hardGoals,
             previousRun: req.body.previousRun,
         });
-        if (!runModel) {
+        if (!planRun) {
             console.log('project ERROR');
             return res.status(403).send('run could not be stored');
         }
-        const saveResult = await runModel.save();
-        const run: PlanRun = req.body  as PlanRun;
-        run._id = runModel._id;
+        if (req.query.save) {
+            const saveResult = await planRun.save();
+        }
 
         try {
-            const planner = new PlanCall(experimentsRootPath, run);
+            await planRun.populate('project').execPopulate();
+            await planRun.populate('planProperties').execPopulate();
+
+            const planner = new PlanCall(experimentsRootPath, planRun);
             const planFound = await planner.executeRun();
-            planner.tidyUp();
+            // planner.tidyUp();
             console.log('Plan computed: ' + planFound);
 
             let propNames: string[] = [];
             if (planFound) {
                 // check which plan properties are satisfied by the plan
-                const planPropertiesDoc = await PlanPropertyModel.find({ project: run.project._id, isUsed: true });
+                const planPropertiesDoc = await PlanPropertyModel.find({ project: planRun.project._id, isUsed: true });
                 const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
-                console.log('#used plan properties: ' + planProperties.length);
+                // console.log('#used plan properties: ' + planProperties.length);
 
-                const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, run);
+                const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, planRun);
                 propNames = await propertyChecker.executeRun();
                 // console.log('Sat Properties: ');
                 // console.log(propNames);
-                propertyChecker.tidyUp();
+                // propertyChecker.tidyUp();
             }
 
 
-            const data = await PlanRunModel.updateOne({ _id: run._id},
-                { $set: {
-                    log: run.log,
-                     planPath: run.planPath,
-                     status: planFound ? RunStatus.finished : RunStatus.noSolution,
-                     satPlanProperties: propNames
-                    }
-                });
+            if (req.query.save) {
+                planRun.status = planFound ? RunStatus.finished : RunStatus.noSolution;
+                planRun.satPlanProperties = propNames;
 
-            const runReturn = await PlanRunModel.findOne({ _id: runModel._id }).populate('planProperties').populate('explanationRuns');
+                await planRun.save();
+                await planRun.populate('explanationRuns').execPopulate();
+            }
 
             res.send({
                 status: true,
                 message: 'run successful',
-                data: runReturn,
+                data: planRun,
             });
         }
         catch (ex) {
-            const data = await PlanRunModel.updateOne({ _id: run._id},
-                { $set: {  status: RunStatus.failed} });
+            if (req.query.save) {
+                planRun.status = RunStatus.failed;
+                await planRun.save();
+            }
             console.warn(ex.message);
             res.send({
                 status: true,
                 message: 'run failed',
-                data
+                data: planRun
             });
         }
     }

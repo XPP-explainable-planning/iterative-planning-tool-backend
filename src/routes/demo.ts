@@ -11,6 +11,7 @@ import { auth } from '../middleware/auth';
 
 import multer from 'multer';
 import path from 'path';
+import { experimentsRootPath } from '../settings';
 
 export const demoRouter = express.Router();
 
@@ -45,11 +46,9 @@ const upload = multer({
 
 demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 
-    let demoDoc: mongoose.Document;
+    let demo: Demo | null = null;
     try {
         console.log('-------------------- >  CREATE Demo');
-        console.log(req.body);
-        console.log(req.file);
 
         const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
 
@@ -60,7 +59,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
             imageFilePath = imgPort + '/uploads/' + req.file.filename;
         }
 
-        const demoModel = new DemoModel({
+        demo = new DemoModel({
             name: req.body.name,
             user: req.user._id,
             summaryImage: imageFilePath,
@@ -70,20 +69,18 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
             settings: settingsId,
             animationSettings: project?.animationSettings
         });
-        if (!demoModel) {
+        if (!demo) {
             return res.status(403).send('create demo failed');
         }
 
-        demoDoc = await demoModel.save();
+        await demo.save();
     } catch (ex) {
         res.send(ex.message);
         return;
     }
 
     try {
-        await demoDoc.populate('project').execPopulate();
-        const demo: Demo = demoDoc.toJSON() as Demo;
-        // console.log(demo);
+        await demo.populate('project').execPopulate();
 
         const planPropertiesDoc = await PlanPropertyModel.find({ project: demo.project._id, isUsed: true });
         const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
@@ -94,15 +91,14 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         demoGen.executeRun().then(
             async (demoFolder) => {
                 console.log('DEMO: generate successful');
-                const updatedDemoDoc = await DemoModel.updateOne({ _id: demo._id},
+                const updatedDemoDoc = await DemoModel.updateOne({ _id: demo?._id},
                     { $set: { definition: demoFolder, status: RunStatus.finished } });
-                console.log(updatedDemoDoc);
                 // demoGen.tidyUp();
             },
             async (err) => {
                 console.log('DEMO: generate failed: ' + err);
-                await DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.failed } });
-                // demoGen.tidyUp();
+                await DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
+                //  demoGen.tidyUp();
             }
         );
 
@@ -113,7 +109,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         });
 
     } catch (ex) {
-        DemoModel.updateOne({ _id: demoDoc._id}, { $set: { status: RunStatus.failed } });
+        DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
         res.send(ex.message);
     }
 });

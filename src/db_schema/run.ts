@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import { File, FileModel, FileSchema } from './file';
 import { PlanProperty } from './plan_property';
 import { Project } from './project';
@@ -26,7 +26,7 @@ export interface Goal {
     goalType: GoalType;
 }
 
-export interface  ExplanationRun{
+export interface  ExplanationRun extends Document{
     _id: string;
     name: string;
     type: RunType;
@@ -39,7 +39,7 @@ export interface  ExplanationRun{
     planRun: string;
 }
 
-export interface  PlanRun{
+export interface  PlanRun extends Document{
     _id: string;
     name: string;
     type: RunType;
@@ -48,7 +48,7 @@ export interface  PlanRun{
     planProperties: PlanProperty[];
     hardGoals: Goal[];
     log: string;
-    planPath: string;
+    planString: string;
     satPlanProperties: string[];
     explanationRuns: ExplanationRun[];
     previousRun: string;
@@ -67,7 +67,7 @@ const PlanRunSchema = new Schema({
     planProperties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
     hardGoals: [GoalSchema],
     log: { type: String, required: false},
-    planPath: { type: String, required: false},
+    planString: { type: String, required: false},
     satPlanProperties: [{ type: String, required: false}],
     explanationRuns: [{ type: mongoose.Schema.Types.ObjectId, ref: 'explanation-run' }],
     previousRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
@@ -85,5 +85,5 @@ const ExplanationRunSchema = new Schema({
     planRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
 });
 
-export const PlanRunModel = mongoose.model('plan-run', PlanRunSchema);
-export const ExplanationRunModel = mongoose.model('explanation-run', ExplanationRunSchema);
+export const PlanRunModel = mongoose.model<PlanRun>('plan-run', PlanRunSchema);
+export const ExplanationRunModel = mongoose.model<ExplanationRun>('explanation-run', ExplanationRunSchema);
