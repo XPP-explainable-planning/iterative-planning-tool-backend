@@ -24,6 +24,7 @@ function to_id_list(props: any) {
 
 plannerRouter.post('/plan', async (req, res) => {
     console.log('Compute Plan');
+    const saveRun: boolean = JSON.parse(req.query.save);
     try {
         console.log(req.body);
         const planRun: PlanRun = new PlanRunModel({
@@ -39,7 +40,8 @@ plannerRouter.post('/plan', async (req, res) => {
             console.log('project ERROR');
             return res.status(403).send('run could not be stored');
         }
-        if (req.query.save) {
+        if (saveRun) {
+            console.log('Run stored in database');
             const saveResult = await planRun.save();
         }
 
@@ -50,7 +52,7 @@ plannerRouter.post('/plan', async (req, res) => {
             const planner = new PlanCall(experimentsRootPath, planRun);
             const planFound = await planner.executeRun();
             // planner.tidyUp();
-            console.log('Plan computed: ' + planFound);
+            console.log('Plan computed and plan found: ' + planFound);
 
             let propNames: string[] = [];
             if (planFound) {
@@ -66,11 +68,10 @@ plannerRouter.post('/plan', async (req, res) => {
                 // propertyChecker.tidyUp();
             }
 
-
-            if (req.query.save) {
                 planRun.status = planFound ? RunStatus.finished : RunStatus.noSolution;
                 planRun.satPlanProperties = propNames;
 
+            if (saveRun) {
                 await planRun.save();
                 await planRun.populate('explanationRuns').execPopulate();
             }
