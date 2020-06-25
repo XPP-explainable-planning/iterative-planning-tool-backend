@@ -86,7 +86,7 @@ export class PropertyCheck {
                     reject(err);
                 }
                 else {
-                    // console.log(results);
+                    console.log(results);
                     resolve(results);
                 }
             });

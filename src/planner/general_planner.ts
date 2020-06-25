@@ -4,7 +4,7 @@ import * as child from 'child_process';
 import 'fs';
 
 import { Project } from '../db_schema/project';
-import { PlanRun, ExplanationRun, Goal } from '../db_schema/run';
+import { PlanRun, ExplanationRun } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
@@ -101,8 +101,8 @@ export class PlannerCall {
         protected domainFile: string,
         protected problemFile: string,
         protected planProperties: PlanProperty[],
-        protected hardGoals: Goal[],
-        protected softGoals: Goal[]) {
+        protected hardGoals: string[],
+        protected softGoals: string[]) {
         this.runFolder = path.join(root, String(this.runId));
 
         this.create_experiment_setup();
@@ -125,8 +125,8 @@ export class PlannerCall {
     }
 
     generate_experiment_setting(): ExperimentSetting {
-        const hardGoals: string[] = this.hardGoals.map(value => value.name);
-        const softGoals: string[] = this.softGoals.map(value => value.name);
+        const hardGoals: string[] = this.hardGoals;
+        const softGoals: string[] = this.softGoals;
         const properties: PlanProperty[] = this.planProperties;
 
         return { hard_goals: hardGoals, plan_properties: properties, soft_goals: softGoals};
@@ -174,6 +174,7 @@ export class PlannerCall {
                 }
                 else {
                     resolve({ planFound: true, log: results});
+                    console.log(results);
                 }
             });
         });

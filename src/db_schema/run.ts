@@ -11,20 +11,11 @@ export enum RunStatus {
     noSolution,
 }
 
-export enum GoalType {
-    planProperty = 'P',
-    goalFact = 'G'
-}
-
 export enum RunType {
     plan = 'PLAN',
     mugs = 'MUGS',
 }
 
-export interface Goal {
-    name: string;
-    goalType: GoalType;
-}
 
 export interface  ExplanationRun extends Document{
     _id: string;
@@ -32,8 +23,8 @@ export interface  ExplanationRun extends Document{
     type: RunType;
     status: RunStatus;
     planProperties: PlanProperty[];
-    hardGoals: Goal[];
-    softGoals: Goal[];
+    hardGoals: string[];
+    softGoals: string[];
     log: string;
     result: string;
     planRun: string;
@@ -46,7 +37,7 @@ export interface  PlanRun extends Document{
     status: RunStatus;
     project: Project;
     planProperties: PlanProperty[];
-    hardGoals: Goal[];
+    hardGoals: string[];
     log: string;
     planString: string;
     satPlanProperties: string[];
@@ -65,7 +56,7 @@ const PlanRunSchema = new Schema({
     type: { type: String, required: true},
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
     planProperties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
-    hardGoals: [GoalSchema],
+    hardGoals: [String],
     log: { type: String, required: false},
     planString: { type: String, required: false},
     satPlanProperties: [{ type: String, required: false}],
@@ -78,8 +69,8 @@ const ExplanationRunSchema = new Schema({
     status: { type: Number, required: true},
     type: { type: String, required: true},
     planProperties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
-    hardGoals: [GoalSchema],
-    softGoals: [GoalSchema],
+    hardGoals: [String],
+    softGoals: [String],
     log: { type: String, required: false},
     result: { type: String, required: false},
     planRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
