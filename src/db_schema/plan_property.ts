@@ -1,8 +1,8 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import { ActionSet, ActionSetSchema } from './action_set';
 import { Project } from './project';
 
-export interface PlanProperty {
+export interface PlanProperty extends Document {
     name: string;
     type: string;
     formula: string;
@@ -10,6 +10,7 @@ export interface PlanProperty {
     naturalLanguageDescription: string;
     project: string;
     isUsed: boolean;
+    globalHardGoal: boolean;
 }
 
 const PlanPropertySchema = new Schema({
@@ -19,8 +20,9 @@ const PlanPropertySchema = new Schema({
     actionSets: [ActionSetSchema],
     naturalLanguageDescription: { type: String, required: true},
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
-    isUsed: {type: Boolean, required: true}
+    isUsed: {type: Boolean, required: true},
+    globalHardGoal: {type: Boolean, required: true}
 });
 
-export const PlanPropertyModel = mongoose.model('plan-property', PlanPropertySchema);
+export const PlanPropertyModel = mongoose.model<PlanProperty>('plan-property', PlanPropertySchema);
 

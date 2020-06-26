@@ -133,14 +133,11 @@ projectRouter.get('', async (req, res) => {
     // const projects = await ProjectModel.find();
     // const projects = await ProjectModel.find();
 
-    // for (const p of projects) {
-    //     console.log('create settings');
-    //     const settingsId = await ExecutionSettingsModel.createProjectDefaultSettings();
-
-    //     p.settings = settingsId;
-
-    //     await p.save();
-    // }
+    for (const p of projects) {
+        console.log('update global hard goals in project');
+        p.globalHardGoals = [];
+        await p.save();
+    }
 
     if (!projects) { return res.status(404).send({ message: 'not found project' }); }
     res.send({
