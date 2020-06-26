@@ -58,9 +58,17 @@ function deleteFile(filepath: string): void {
     child.spawnSync('rm ', [filepath]);
 }
 
+function deleteFolder(folderPath: string): void {
+    child.spawnSync('rm ', ['-r', folderPath]);
+}
+
 export function deleteResultFile(filepath: string): void {
     const filename = path.basename(filepath);
     deleteFile(path.join(resultsPath, filename));
+}
+
+export function deleteResultFolder(folderName: string): void {
+    deleteFile(path.join(resultsPath, folderName));
 }
 
 export function deleteUploadFile(filepath: string): void {

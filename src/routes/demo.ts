@@ -12,6 +12,7 @@ import { auth } from '../middleware/auth';
 import multer from 'multer';
 import path from 'path';
 import { experimentsRootPath } from '../settings';
+import { deleteUploadFile, deleteResultFile } from '../planner/pddl_file_utils';
 
 export const demoRouter = express.Router();
 
@@ -114,6 +115,34 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
     }
 });
 
+
+demoRouter.put('/', auth, async (req, res) => {
+
+    try {
+        console.log('-------------------- >  UPDATE Demo');
+        console.log(req.body);
+        const demo: Demo | null = await DemoModel.findById(req.body._id);
+
+        if (!demo) {
+            return res.status(403).send('Demo not found');
+        }
+
+        demo.name = req.body.name;
+        demo.introduction = req.body.introduction;
+
+        await demo.save();
+
+        res.send({
+            status: true,
+            message: 'Demo updated',
+            data: demo
+        });
+    } catch (ex) {
+        res.send(ex.message);
+        return;
+    }
+});
+
 demoRouter.post('/cancel/:id', auth, async (req, res) => {
 
     console.log('Cancel id: ' + req.params.id);
@@ -148,8 +177,8 @@ demoRouter.get('', authForward, async (req, res) => {
     try {
         let demos;
         if (req.user) {
-            demos = await DemoModel.find();
-            // demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
+            // demos = await DemoModel.find();
+            demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
         } else {
             demos = await DemoModel.find({ public: true});
         }
@@ -176,29 +205,6 @@ demoRouter.get('', authForward, async (req, res) => {
     }
 });
 
-demoRouter.put('/:id', authForward, async (req, res) => {
-    const id = mongoose.Types.ObjectId(req.params.id);
-    const updateDemo: Demo = req.body;
-
-    const demo: Demo | null = await DemoModel.findOne({ _id: id });
-    if (!demo) { return res.status(404).send({ message: 'not found demo' }); }
-
-    demo.maxRuns = updateDemo.maxRuns;
-    demo.allowQuestions = updateDemo.allowQuestions;
-    demo.maxQuestionSize = updateDemo.maxQuestionSize;
-    demo.public = updateDemo.public;
-
-    const saverResult = await demo.save();
-    if (!saverResult) { return res.status(404).send({ message: 'update failed' }); }
-
-    console.log('DEMO updated');
-    res.send({
-        data: demo
-    });
-
-});
-
-
 demoRouter.get('/:id', authForward, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     const demo = await DemoModel.findOne({ _id: id });
@@ -212,10 +218,23 @@ demoRouter.get('/:id', authForward, async (req, res) => {
 demoRouter.delete('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('DELETE: demo ' + id);
-    const demo = await DemoModel.deleteOne({ _id: id });
+
+    const demo: Demo | null = await DemoModel.findById(id);
     if (!demo) { return res.status(404).send({ message: 'not found demo' }); }
+
+    if (demo.summaryImage) {
+        deleteUploadFile(demo.summaryImage);
+    }
+
+    deleteResultFile('demo_' + demo._id);
+
+    const result = await DemoModel.deleteOne({ _id: id });
+    if (!result) { return res.status(404).send({ message: 'not found demo' }); }
+
+
+
     res.send({
-        data: demo
+        data: result
     });
 
 });

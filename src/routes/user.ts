@@ -48,10 +48,12 @@ userRouter.post('/login', authForward, async(req, res) => {
 });
 
 
-// userRouter.get('/users/me', auth, async(req, res) => {
-//     // View logged in user profile
-//     res.send({ user: req.body.user });
-// });
+userRouter.get('', auth, async(req, res) => {
+    // View logged in user profile
+    console.log('Get User');
+    console.log(req.user);
+    res.send({ data: req.user });
+});
 
 userRouter.post('/logout', auth, async (req, res) => {
     // Log user out of the application
