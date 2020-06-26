@@ -23,6 +23,7 @@ planPropertyRouter.post('/', async (req, res) => {
             project: req.body.project,
             isUsed: req.body.isUsed,
             globalHardGoal: req.body.globalHardGoal,
+            value: req.body.value,
         });
         if (!planProperty) {
             console.log('Plan Property ERROR');
@@ -77,7 +78,7 @@ planPropertyRouter.get('/', async (req, res) => {
     if (!properties) { return res.status(404).send({ message: 'not found properties' }); }
 
     // for (const prop of properties) {
-    //     prop.globalHardGoal = false;
+    //     prop.value = 1;
     //     prop.save();
     // }
 

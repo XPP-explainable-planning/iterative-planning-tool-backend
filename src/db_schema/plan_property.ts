@@ -11,6 +11,7 @@ export interface PlanProperty extends Document {
     project: string;
     isUsed: boolean;
     globalHardGoal: boolean;
+    value: number;
 }
 
 const PlanPropertySchema = new Schema({
@@ -20,8 +21,9 @@ const PlanPropertySchema = new Schema({
     actionSets: [ActionSetSchema],
     naturalLanguageDescription: { type: String, required: true},
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
-    isUsed: {type: Boolean, required: true},
-    globalHardGoal: {type: Boolean, required: true}
+    isUsed: { type: Boolean, required: true},
+    globalHardGoal: { type: Boolean, required: true},
+    value: { type: Number, required: true}
 });
 
 export const PlanPropertyModel = mongoose.model<PlanProperty>('plan-property', PlanPropertySchema);
