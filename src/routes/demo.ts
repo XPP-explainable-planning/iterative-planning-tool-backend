@@ -177,8 +177,8 @@ demoRouter.get('', authForward, async (req, res) => {
     try {
         let demos;
         if (req.user) {
-            // demos = await DemoModel.find();
-            demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
+            demos = await DemoModel.find();
+            // demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
         } else {
             demos = await DemoModel.find({ public: true});
         }

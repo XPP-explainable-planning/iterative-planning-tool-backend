@@ -6,6 +6,7 @@ export interface ExecutionSettings  extends Document{
     maxQuestionSize: number;
     public: boolean;
     allowQuestions: boolean;
+    usePlanPropertyValues: boolean;
 }
 
 const ExecutionSettingsSchema = new Schema({
@@ -13,6 +14,7 @@ const ExecutionSettingsSchema = new Schema({
     maxQuestionSize: { type: Number, required: true},
     public: { type: Boolean, required: true},
     allowQuestions: { type: Boolean, required: false},
+    usePlanPropertyValues: { type: Boolean, required: false},
 });
 
 

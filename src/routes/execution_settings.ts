@@ -23,11 +23,14 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.allowQuestions = updateSettings.allowQuestions;
     settings.maxQuestionSize = updateSettings.maxQuestionSize;
     settings.public = updateSettings.public;
+    settings.usePlanPropertyValues = updateSettings.usePlanPropertyValues;
+
+    // console.log(settings);
 
     const saveResult = await settings.save();
     if (!saveResult) { return res.status(404).send({ message: 'update failed' }); }
 
-    console.log('DEMO updated');
+    console.log('settings updated');
     res.send({
         data: settings
     });
@@ -42,6 +45,9 @@ executionSettingsRouter.get('/:id', auth, async (req, res) => {
     if (!settings) {
         return res.status(404).send({ message: 'not found settings' });
     }
+    // settings.usePlanPropertyValues = true;
+    // await settings.save();
+    console.log(settings);
     res.send({
         data: settings
     });
