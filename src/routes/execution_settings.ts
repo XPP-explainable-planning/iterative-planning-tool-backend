@@ -26,6 +26,7 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.usePlanPropertyValues = updateSettings.usePlanPropertyValues;
     settings.measureTime = updateSettings.measureTime;
     settings.useTimer = updateSettings.useTimer;
+    settings.maxTime = updateSettings.maxTime;
     settings.showAnimation = updateSettings.showAnimation;
 
     // console.log(settings);
