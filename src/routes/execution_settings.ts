@@ -24,6 +24,9 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.maxQuestionSize = updateSettings.maxQuestionSize;
     settings.public = updateSettings.public;
     settings.usePlanPropertyValues = updateSettings.usePlanPropertyValues;
+    settings.measureTime = updateSettings.measureTime;
+    settings.useTimer = updateSettings.useTimer;
+    settings.showAnimation = updateSettings.showAnimation;
 
     // console.log(settings);
 
@@ -45,9 +48,8 @@ executionSettingsRouter.get('/:id', auth, async (req, res) => {
     if (!settings) {
         return res.status(404).send({ message: 'not found settings' });
     }
-    // settings.usePlanPropertyValues = true;
+    // settings.showAnimation = false;
     // await settings.save();
-    console.log(settings);
     res.send({
         data: settings
     });

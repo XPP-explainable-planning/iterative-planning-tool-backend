@@ -7,6 +7,10 @@ export interface ExecutionSettings  extends Document{
     public: boolean;
     allowQuestions: boolean;
     usePlanPropertyValues: boolean;
+    useTimer: boolean;
+    measureTime: boolean;
+    maxTime: number;
+    showAnimation: boolean;
 }
 
 const ExecutionSettingsSchema = new Schema({
@@ -15,6 +19,10 @@ const ExecutionSettingsSchema = new Schema({
     public: { type: Boolean, required: true},
     allowQuestions: { type: Boolean, required: false},
     usePlanPropertyValues: { type: Boolean, required: false},
+    useTimer: { type: Boolean, required: false},
+    measureTime: { type: Boolean, required: false},
+    maxTime: { type: Number, required: false},
+    showAnimation: { type: Boolean, required: false},
 });
 
 
