@@ -1,3 +1,4 @@
+import { settings } from 'cluster';
 import { ProjectModel, Project } from './../db_schema/project';
 import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { authForward } from './../middleware/auth';
@@ -52,39 +53,54 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         console.log('-------------------- >  CREATE Demo');
 
         const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
+        const project = await ProjectModel.findById(req.body.projectId);
 
-        const project = await ProjectModel.findById(req.body.project);
 
         let imageFilePath = '';
         if (req.file) {
             imageFilePath = imgPort + '/uploads/' + req.file.filename;
         }
 
-        demo = new DemoModel({
-            name: req.body.name,
-            user: req.user._id,
-            summaryImage: imageFilePath,
-            project: req.body.project,
-            introduction: req.body.introduction,
-            status: RunStatus.pending,
-            settings: settingsId,
-            animationSettings: project?.animationSettings
-        });
+        const projectData = project?.toJSON();
+        delete projectData?._id;
+        delete projectData?.itemType;
+        delete projectData?.settings;
+
+        demo = new DemoModel(projectData);
+        demo.isNew = true;
+
+        demo.name = req.body.name;
+        demo.summaryImage = imageFilePath;
+        demo.status = RunStatus.pending;
+        demo.settings = settingsId;
+        demo.description = req.body.description;
+
         if (!demo) {
             return res.status(403).send('create demo failed');
         }
 
-        await demo.save();
+        await demo.save((reason) => { console.log('Reason fail demo: ' + reason); });
+
+        // copy plan-properties
+        const planProperties = await PlanPropertyModel.find({ project: project?._id, isUsed: true });
+        console.log('Copy Plan Properties #' + planProperties.length);
+        for (const pp of planProperties) {
+            const newPP = new PlanPropertyModel(pp);
+            newPP._id = undefined;
+            newPP.project = demo._id;
+            newPP.isNew = true;
+            newPP.save((reason) => { console.log('Reason fail property: ' + reason); });
+        }
+
+
     } catch (ex) {
         res.send(ex.message);
         return;
     }
 
     try {
-        await demo.populate('project').execPopulate();
 
-        const planPropertiesDoc = await PlanPropertyModel.find({ project: demo.project._id, isUsed: true });
-        const planProperties = planPropertiesDoc?.map(pd => pd.toJSON() as PlanProperty);
+        const planProperties = await PlanPropertyModel.find({ project: demo._id, isUsed: true });
 
         DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
         const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
@@ -94,12 +110,12 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
                 console.log('DEMO: generate successful');
                 const updatedDemoDoc = await DemoModel.updateOne({ _id: demo?._id},
                     { $set: { definition: demoFolder, status: RunStatus.finished } });
-                // demoGen.tidyUp();
+                demoGen.tidyUp();
             },
             async (err) => {
                 console.log('DEMO: generate failed: ' + err);
                 await DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
-                //  demoGen.tidyUp();
+                 demoGen.tidyUp();
             }
         );
 
@@ -128,7 +144,7 @@ demoRouter.put('/', auth, async (req, res) => {
         }
 
         demo.name = req.body.name;
-        demo.introduction = req.body.introduction;
+        demo.description = req.body.description;
 
         await demo.save();
 
@@ -227,6 +243,12 @@ demoRouter.delete('/:id', auth, async (req, res) => {
     }
 
     deleteResultFile('demo_' + demo._id);
+
+    // delete properties
+    const propertyDeleteResult = await PlanPropertyModel.deleteMany({ project: id.toHexString() });
+    if (!propertyDeleteResult) { return res.status(404).send({ message: 'Problem during project deletion occurred' }); }
+
+    await ExecutionSettingsModel.deleteOne({ _id: demo.settings });
 
     const result = await DemoModel.deleteOne({ _id: id });
     if (!result) { return res.status(404).send({ message: 'not found demo' }); }

@@ -1,8 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { File, FileModel, FileSchema } from './file';
+import { File, FileSchema } from './file';
 import { PlanProperty } from './plan_property';
-import { DomainSchema, Domain } from './domain';
 import { ExecutionSettings } from './execution_settings';
+
+
+export enum ProjectType {
+    general = 'GENERAL',
+    demo = 'DEMO'
+}
+
+const baseOptions = {
+    discriminatorKey: 'itemType',
+    collection: 'projects',
+  };
 
 export interface Project extends Document{
     _id: string;
@@ -18,7 +28,7 @@ export interface Project extends Document{
     animationSettings: string;
 }
 
-const ProjectSchema = new Schema({
+const BaseProjectSchema = new Schema({
     name: { type: String, required: true},
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     domainFile: { type: FileSchema, required: true},
@@ -28,7 +38,9 @@ const ProjectSchema = new Schema({
     taskSchema: { type: String, required: false},
     settings: { type: mongoose.Schema.Types.ObjectId, ref: 'execution-settings' },
     animationSettings: { type: String, required: false}
-});
+}, baseOptions);
 
-export const ProjectModel = mongoose.model<Project>('project', ProjectSchema);
+export const BaseProjectModel = mongoose.model<Project>('base-project', BaseProjectSchema);
+
+export const ProjectModel = BaseProjectModel.discriminator<Project>('general-project', new mongoose.Schema());
 

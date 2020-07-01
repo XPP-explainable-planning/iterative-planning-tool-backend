@@ -20,7 +20,7 @@ const PlanPropertySchema = new Schema({
     formula: { type: String, required: true},
     actionSets: [ActionSetSchema],
     naturalLanguageDescription: { type: String, required: true},
-    project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'base-project' },
     isUsed: { type: Boolean, required: true},
     globalHardGoal: { type: Boolean, required: true},
     value: { type: Number, required: true}

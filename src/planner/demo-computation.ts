@@ -56,9 +56,9 @@ export class DemoComputation {
 
         child.execSync(`mkdir -p ${this.runFolder}/results`);
         child.execSync(`mkdir -p ${this.runFolder}/runs`);
-        const domainFileName = path.basename(this.demo.project.domainFile.path);
-        const problemFileName = path.basename(this.demo.project.problemFile.path);
-        const taskSchemaFileName = path.basename(this.demo.project.taskSchema);
+        const domainFileName = path.basename(this.demo.domainFile.path);
+        const problemFileName = path.basename(this.demo.problemFile.path);
+        const taskSchemaFileName = path.basename(this.demo.taskSchema);
 
         child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
         child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);

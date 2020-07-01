@@ -54,7 +54,7 @@ const PlanRunSchema = new Schema({
     name: { type: String, required: true},
     status: { type: Number, required: true},
     type: { type: String, required: true},
-    project: { type: mongoose.Schema.Types.ObjectId, ref: 'project' },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'base-project' },
     planProperties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'plan-property' }],
     hardGoals: [String],
     log: { type: String, required: false},

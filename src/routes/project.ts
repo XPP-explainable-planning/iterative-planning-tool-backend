@@ -1,3 +1,4 @@
+import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { PlanRunModel, PlanRun, ExplanationRunModel } from './../db_schema/run';
 import { PlanPropertyModel } from './../db_schema/plan_property';
 import { Project } from './../db_schema/project';
@@ -16,7 +17,6 @@ export const projectRouter = express.Router();
 
 async function computeAndStoreSchema(project: Project): Promise<Project | null> {
     try {
-        console.log('Compute and store schema');
         const planner = new TranslatorCall(experimentsRootPath, project);
         await planner.executeRun();
         // console.log('Schema translated: ' + project.taskSchema);
@@ -54,16 +54,22 @@ projectRouter.post('/', async (req, res) => {
             console.log('project ERROR');
             return res.status(403).send('create project failed');
         }
-        await projectModel.save();
 
-        // compute and store schema
-        const project: Project = projectModel.toJSON() as Project;
-        const resProject: Project | null = await computeAndStoreSchema(project);
+        projectModel.save().then(async v => {
+            console.log(projectModel);
 
-        res.send({
-            status: true,
-            message: 'Project is stored',
-            data: resProject
+            // compute and store schema
+            const project: Project = projectModel.toJSON() as Project;
+            const resProject: Project | null = await computeAndStoreSchema(project);
+
+            res.send({
+                status: true,
+                message: 'Project is stored',
+                data: resProject
+            });
+        },
+        reason => {
+            console.log(reason);
         });
 
     } catch (ex) {
@@ -96,36 +102,36 @@ projectRouter.put('/:id', async (req, res) => {
 });
 
 
-projectRouter.post('/:id', async (req, res) => {
-    // TODO implement settings copy
-    try {
-        console.log('POST copy project id: ' + req.params.id);
-        const refId = mongoose.Types.ObjectId(req.params.id);
-        const refProject: Project | null = await ProjectModel.findOne({ _id: refId }).lean();
-        if (!refProject) { return res.status(404).send({ message: 'not found project' }); }
+// projectRouter.post('/:id', async (req, res) => {
+//     // TODO implement settings copy
+//     try {
+//         console.log('POST copy project id: ' + req.params.id);
+//         const refId = mongoose.Types.ObjectId(req.params.id);
+//         const refProject: Project | null = await ProjectModel.findOne({ _id: refId }).lean();
+//         if (!refProject) { return res.status(404).send({ message: 'not found project' }); }
 
-        // console.log(refProject);
-        delete refProject._id; // reset the id to create a new Object
-        refProject.name = refProject.name + '(copy)';
-        const newProjectModel = new ProjectModel(refProject);
-        await newProjectModel.save();
+//         // console.log(refProject);
+//         delete refProject._id; // reset the id to create a new Object
+//         refProject.name = refProject.name + '(copy)';
+//         const newProjectModel = new ProjectModel(refProject);
+//         await newProjectModel.save();
 
-        // compute and store schema
-        const project: Project = newProjectModel.toJSON() as Project;
-        const resProject: Project | null = await computeAndStoreSchema(project);
+//         // compute and store schema
+//         const project: Project = newProjectModel.toJSON() as Project;
+//         const resProject: Project | null = await computeAndStoreSchema(project);
 
-        // console.log(resProject);
+//         // console.log(resProject);
 
-        res.send({
-            status: true,
-            message: 'Project is copied',
-            data: resProject
-        });
+//         res.send({
+//             status: true,
+//             message: 'Project is copied',
+//             data: resProject
+//         });
 
-    } catch (ex) {
-        res.send(ex.message);
-    }
-});
+//     } catch (ex) {
+//         res.send(ex.message);
+//     }
+// });
 
 projectRouter.get('', async (req, res) => {
     console.log('GET project');
@@ -186,8 +192,10 @@ projectRouter.delete('/:id', async (req, res) => {
     }
 
     // delete properties
-    const propertyDeleteResult = await PlanPropertyModel.deleteMany({ project: id });
+    const propertyDeleteResult = await PlanPropertyModel.deleteMany({ project: id.toHexString() });
     if (!propertyDeleteResult) { return res.status(404).send({ message: 'Problem during project deletion occurred' }); }
+
+    await ExecutionSettingsModel.deleteOne({ _id: projectDoc.settings });
 
     // delete Project
     const projectDeletResult = await ProjectModel.deleteOne({ _id: id });
