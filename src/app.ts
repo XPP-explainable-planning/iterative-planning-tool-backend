@@ -23,6 +23,7 @@ import { planPropertyRouter } from './routes/plan_property';
 import  { plannerRouter} from './routes/planner';
 import { runRouter } from './routes/run';
 import { demoRouter } from './routes/demo';
+import { userStudyRouter } from './routes/user-strudy';
 
 const app = express();
 const cors = require('cors');
@@ -48,6 +49,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/users', userRouter);
 app.use('/api/demo', demoRouter);
+app.use('/api/user-study', userStudyRouter);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -60,7 +62,8 @@ app.use('/api/plan-property', planPropertyRouter);
 app.use('/api/project', projectRouter);
 app.use('/api/planner', plannerRouter);
 app.use('/api/run', runRouter);
-app.use('/api/settings', executionSettingsRouter)
+app.use('/api/settings', executionSettingsRouter);
+
 
 
 console.log('Static path: ');
