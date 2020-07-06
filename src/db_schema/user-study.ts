@@ -20,6 +20,7 @@ export interface UserStudy extends Document{
     endDate: string;
     steps: UserStudyStep[];
     available: boolean;
+    redirectUrl?: string;
 }
 
 const UserStudyStepSchema = new Schema({
@@ -35,6 +36,7 @@ const UserStudySchema = new Schema({
     endDate: { type: String, required: true},
     steps: [{ type: UserStudyStepSchema, required: false}],
     available: { type: Boolean, required: true},
+    redirectUrl: { type: String, required: false},
 });
 
 export const UserStudyModel = mongoose.model('user-study', UserStudySchema);

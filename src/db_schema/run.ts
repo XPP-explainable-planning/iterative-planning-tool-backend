@@ -62,7 +62,7 @@ const PlanRunSchema = new Schema({
     satPlanProperties: [{ type: String, required: false}],
     explanationRuns: [{ type: mongoose.Schema.Types.ObjectId, ref: 'explanation-run' }],
     previousRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
-});
+}, { timestamps: true});
 
 const ExplanationRunSchema = new Schema({
     name: { type: String, required: true},
@@ -74,7 +74,7 @@ const ExplanationRunSchema = new Schema({
     log: { type: String, required: false},
     result: { type: String, required: false},
     planRun: { type: mongoose.Schema.Types.ObjectId, ref: 'plan-run' },
-});
+}, { timestamps: true});
 
 export const PlanRunModel = mongoose.model<PlanRun>('plan-run', PlanRunSchema);
 export const ExplanationRunModel = mongoose.model<ExplanationRun>('explanation-run', ExplanationRunSchema);
