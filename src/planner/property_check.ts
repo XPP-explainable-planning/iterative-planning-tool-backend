@@ -42,7 +42,7 @@ export class PropertyCheck {
             this.planRun.planString,
             'utf8');
 
-        console.log('plan property checker initialized');
+        // console.log('plan property checker initialized');
     }
 
     generate_experiment_setting(): ExperimentSetting {
@@ -76,9 +76,9 @@ export class PropertyCheck {
     }
 
     pythonShellCall(options: any): Promise<string[]> {
-        console.log('python call');
+        // console.log('python call');
         const p: Promise<string[]> = new Promise((resolve, reject) => {
-            console.log(options);
+            // console.log(options);
             // @ts-ignore
             PythonShell.run('main.py', options,  (err: any, results: any) => {
                 if (err) {
@@ -86,7 +86,7 @@ export class PropertyCheck {
                     reject(err);
                 }
                 else {
-                    console.log(results);
+                    // console.log(results);
                     resolve(results);
                 }
             });

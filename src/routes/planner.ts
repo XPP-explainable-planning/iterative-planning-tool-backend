@@ -8,7 +8,7 @@ import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, RunStatus }
 import { ExplanationCall, PlanCall, PlannerCall } from '../planner/general_planner';
 import { experimentsRootPath } from '../settings';
 import { USPlanRunModel, USExplanationRunModel } from '../db_schema/user-study-store';
-import { auth } from '../middleware/auth';
+import { auth, authUserStudy } from '../middleware/auth';
 
 
 export const plannerRouter = express.Router();
@@ -19,17 +19,17 @@ function to_id_list(props: any) {
         const id = mongoose.Types.ObjectId(p._id);
         res.push(id);
     }
-    console.log(res);
+    // console.log(res);
     return res;
 }
 
 
-plannerRouter.post('/plan', async (req, res) => {
+plannerRouter.post('/plan', authUserStudy, async (req, res) => {
     console.log('Compute Plan');
     const saveRun: boolean = JSON.parse(req.query.save);
 
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const planRun: PlanRun = new PlanRunModel({
             name: req.body.name,
             status: RunStatus.pending,
@@ -40,7 +40,7 @@ plannerRouter.post('/plan', async (req, res) => {
             previousRun: req.body.previousRun,
         });
         if (!planRun) {
-            console.log('project ERROR');
+            // console.log('project ERROR');
             return res.status(403).send('run could not be stored');
         }
         if (saveRun) {
@@ -49,6 +49,7 @@ plannerRouter.post('/plan', async (req, res) => {
         }
 
         if (req.userStudyUser) {
+            console.log('Store run for user study user');
             await planRun.save();
             const usPlanRun = new USPlanRunModel({
                 user: req.userStudyUser.prolificId,
@@ -63,8 +64,8 @@ plannerRouter.post('/plan', async (req, res) => {
 
             const planner = new PlanCall(experimentsRootPath, planRun);
             const planFound = await planner.executeRun();
-            // planner.tidyUp();
-            console.log('Plan computed and plan found: ' + planFound);
+            planner.tidyUp();
+            // console.log('Plan computed and plan found: ' + planFound);
 
             let propNames: string[] = [];
             if (planFound) {
@@ -77,7 +78,7 @@ plannerRouter.post('/plan', async (req, res) => {
                 propNames = await propertyChecker.executeRun();
                 // console.log('Sat Properties: ');
                 // console.log(propNames);
-                // propertyChecker.tidyUp();
+                propertyChecker.tidyUp();
             }
 
                 planRun.status = planFound ? RunStatus.finished : RunStatus.noSolution;
@@ -131,7 +132,7 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
             planRun: planRunId,
         });
         if (!explanationRunModel) {
-            console.log('project ERROR');
+            // console.log('project ERROR');
             return res.status(403).send('run could not be stored');
         }
         const saveResult = await explanationRunModel.save();
@@ -141,7 +142,7 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
 
         const planner = new ExplanationCall(experimentsRootPath, planRun.project, run);
         planner.executeRun().then( async () => {
-            console.log('Update result');
+            // console.log('Update result');
             // set result file path
             const returnData = await ExplanationRunModel.updateOne({ _id: run._id},
                 { $set: { result: run.result, log: run.log, status: RunStatus.finished} });
@@ -170,7 +171,7 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
 });
 
 
-plannerRouter.post('/mugs-save/:id', async (req, res) => {
+plannerRouter.post('/mugs-save/:id', authUserStudy, async (req, res) => {
     try {
         if (! req.userStudyUser) {
             return res.status(401).send({ message: 'Access denied.' });

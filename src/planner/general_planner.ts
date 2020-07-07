@@ -137,8 +137,8 @@ export class PlannerCall {
         const addArgs = [this.runFolder, '--build', 'release64', `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`, `${this.runFolder}/exp_setting.json`, ...this.plannerSetting];
 
-        console.log('Command:');
-        console.log(addArgs);
+        // console.log('Command:');
+        // console.log(addArgs);
 
         const options = {
             mode: 'text',
@@ -174,7 +174,7 @@ export class PlannerCall {
                 }
                 else {
                     resolve({ planFound: true, log: results});
-                    console.log(results);
+                    // console.log(results);
                 }
             });
         });
@@ -229,8 +229,8 @@ export class ExplanationCall extends PlannerCall{
 
         const buffer: Buffer = readFileSync(path.join(this.runFolder, 'mugs.json'));
         this.run.result = buffer.toString('utf8');
-        console.log('MUGS');
-        console.log(this.run.result);
+        // console.log('MUGS');
+        // console.log(this.run.result);
 
         this.run.log = serverResultsPath + `/out_${this.runId}.log`;
     }
