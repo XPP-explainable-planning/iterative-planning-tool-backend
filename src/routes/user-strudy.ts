@@ -2,7 +2,7 @@ import { UserStudy } from './../db_schema/survey';
 import { UserStudyModel } from './../db_schema/user-study';
 import express from 'express';
 import mongoose from 'mongoose';
-import { auth, authForward } from '../middleware/auth';
+import { auth, authForward, authUserStudy } from '../middleware/auth';
 
 export const userStudyRouter = express.Router();
 
@@ -82,7 +82,15 @@ userStudyRouter.get('/', authForward, async (req, res) => {
 
 
 
-userStudyRouter.get('/:id', auth, async (req, res) => {
+userStudyRouter.get('/:id', authForward, authUserStudy, async (req, res) => {
+    console.log('get user study: ');
+    console.log(req);
+    console.log(req.user);
+    console.log(req.userStudyUser);
+    if (! req.user && ! req.userStudyUser) {
+        console.log('User Study access denied');
+        return res.status(401).send({ message: 'Not authorized to access this resource' });
+    }
     const id = mongoose.Types.ObjectId(req.params.id);
     const userStudy = await UserStudyModel.findOne({ _id: id });
     if (!userStudy) { return res.status(404).send({ message: 'not found user study' }); }

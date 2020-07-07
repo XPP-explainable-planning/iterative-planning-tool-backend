@@ -42,7 +42,7 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
 });
 
 
-executionSettingsRouter.get('/:id', auth, async (req, res) => {
+executionSettingsRouter.get('/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('Get settings: ' + id);
     const settings = await ExecutionSettingsModel.findOne({ _id: id });

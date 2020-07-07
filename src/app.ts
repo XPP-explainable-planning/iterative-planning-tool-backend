@@ -1,5 +1,5 @@
 import { executionSettingsRouter } from './routes/execution_settings';
-import { auth } from './middleware/auth';
+import { auth, authUserStudy } from './middleware/auth';
 import { userRouter } from './routes/user';
 
 console.log('-------- EXPLORE BACKEND ---------');
@@ -24,6 +24,7 @@ import  { plannerRouter} from './routes/planner';
 import { runRouter } from './routes/run';
 import { demoRouter } from './routes/demo';
 import { userStudyRouter } from './routes/user-strudy';
+import { userStudyUserRouter } from './routes/user-study-user';
 
 const app = express();
 const cors = require('cors');
@@ -48,21 +49,26 @@ app.use(sassMiddleware({
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/users', userRouter);
-app.use('/api/demo', demoRouter);
+app.use('/api/user-study-users', userStudyUserRouter);
+
 app.use('/api/user-study', userStudyRouter);
+app.use('/api/demo', demoRouter);
+
+app.use('/api/settings', executionSettingsRouter);
+app.use('/api/plan-property', planPropertyRouter);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/results', express.static(path.join(__dirname, 'results')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+app.use('/api/planner', plannerRouter);
 
 app.use(auth);
 app.use('/', indexRouter);
-app.use('/results', express.static(path.join(__dirname, 'results')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/pddl-file', pddlFileRouter);
-app.use('/api/plan-property', planPropertyRouter);
 app.use('/api/project', projectRouter);
-app.use('/api/planner', plannerRouter);
 app.use('/api/run', runRouter);
-app.use('/api/settings', executionSettingsRouter);
+
 
 
 

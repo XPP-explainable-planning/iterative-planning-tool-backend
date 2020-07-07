@@ -7,6 +7,8 @@ import path from 'path';
 import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, RunStatus } from '../db_schema/run';
 import { ExplanationCall, PlanCall, PlannerCall } from '../planner/general_planner';
 import { experimentsRootPath } from '../settings';
+import { USPlanRunModel, USExplanationRunModel } from '../db_schema/user-study-store';
+import { auth } from '../middleware/auth';
 
 
 export const plannerRouter = express.Router();
@@ -25,6 +27,7 @@ function to_id_list(props: any) {
 plannerRouter.post('/plan', async (req, res) => {
     console.log('Compute Plan');
     const saveRun: boolean = JSON.parse(req.query.save);
+
     try {
         console.log(req.body);
         const planRun: PlanRun = new PlanRunModel({
@@ -43,6 +46,15 @@ plannerRouter.post('/plan', async (req, res) => {
         if (saveRun) {
             console.log('Run stored in database');
             const saveResult = await planRun.save();
+        }
+
+        if (req.userStudyUser) {
+            await planRun.save();
+            const usPlanRun = new USPlanRunModel({
+                user: req.userStudyUser.prolificId,
+                planRun: planRun._id,
+            });
+            await usPlanRun.save();
         }
 
         try {
@@ -101,8 +113,9 @@ plannerRouter.post('/plan', async (req, res) => {
     }
 });
 
-plannerRouter.post('/mugs/:id', async (req, res) => {
+plannerRouter.post('/mugs/:id', auth, async (req, res) => {
     try {
+        const saveRun: boolean = JSON.parse(req.query.save);
         const planRunId =  mongoose.Types.ObjectId(req.params.id);
         const planRunModel = await PlanRunModel.findOne({ _id: planRunId}).populate('project');
         if (!planRunModel) { return res.status(404).send({ message: 'no run found' }); }
@@ -149,6 +162,50 @@ plannerRouter.post('/mugs/:id', async (req, res) => {
                 message: 'run successful',
                 data: runReturn,
             });
+        });
+    }
+    catch (ex) {
+        res.send(ex.message);
+    }
+});
+
+
+plannerRouter.post('/mugs-save/:id', async (req, res) => {
+    try {
+        if (! req.userStudyUser) {
+            return res.status(401).send({ message: 'Access denied.' });
+        }
+
+        const planRunId =  mongoose.Types.ObjectId(req.params.id);
+        const planRun = await PlanRunModel.findOne({ _id: planRunId}).populate('project');
+        if (!planRun) { return res.status(404).send({ message: 'no run found' }); }
+
+        const explanationRun = new ExplanationRunModel({
+            name: req.body.name,
+            status: RunStatus.finished,
+            type: req.body.type,
+            planProperties: req.body.planProperties,
+            hardGoals: req.body.hardGoals,
+            softGoals: req.body.softGoals,
+            planRun: planRunId,
+        });
+
+        if (!explanationRun) {
+            return res.status(403).send('run could not be stored');
+        }
+
+        await explanationRun.save();
+
+        const usExpRun = new USExplanationRunModel({
+            user: req.userStudyUser.prolificId,
+            expRun: explanationRun._id,
+        });
+        await usExpRun.save();
+
+        res.send({
+            status: true,
+            message: 'run saved successfully',
+            data: explanationRun,
         });
     }
     catch (ex) {

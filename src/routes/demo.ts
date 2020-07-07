@@ -196,7 +196,12 @@ demoRouter.get('', authForward, async (req, res) => {
             demos = await DemoModel.find();
             // demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
         } else {
-            demos = await DemoModel.find({ public: true});
+            const allDemos: Demo[] = await DemoModel.find().populate('settings');
+            demos = allDemos.filter(d => {
+                const p = d.settings.public;
+                d.settings = d.settings._id;
+                return p;
+            });
         }
 
         // for (const demo of demos) {

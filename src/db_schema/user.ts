@@ -6,7 +6,7 @@ import * as jwt from 'jsonwebtoken';
 export interface User extends Document{
     name: string;
     password: string | null;
-    tockens: string[];
+    tokens: string[];
 }
 
 const UserSchema =  new Schema<User>({

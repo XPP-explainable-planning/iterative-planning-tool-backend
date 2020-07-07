@@ -5,11 +5,12 @@ import path from 'path';
 
 import { PlanPropertyModel, PlanProperty } from '../db_schema/plan_property';
 import { ActionSetModel } from '../db_schema/action_set';
+import { auth } from '../middleware/auth';
 
 export const planPropertyRouter = express.Router();
 
 
-planPropertyRouter.post('/', async (req, res) => {
+planPropertyRouter.post('/', auth, async (req, res) => {
     try {
         console.log('POST PLAN PROPERTY');
         console.log(req.body);
@@ -44,7 +45,7 @@ planPropertyRouter.post('/', async (req, res) => {
 });
 
 
-planPropertyRouter.put('/:id', async (req, res) => {
+planPropertyRouter.put('/:id', auth, async (req, res) => {
     try {
         const refId = mongoose.Types.ObjectId(req.params.id);
 
@@ -88,7 +89,7 @@ planPropertyRouter.get('/', async (req, res) => {
 
 });
 
-planPropertyRouter.get('/domain/:domain', async (req, res) => {
+planPropertyRouter.get('/domain/:domain', auth, async (req, res) => {
     const propertyDomain = req.params.domain;
     // console.log('GET plan property domain: ' + propertyDomain);
     const properties = await  PlanPropertyModel.find({ domain: propertyDomain });
@@ -100,7 +101,7 @@ planPropertyRouter.get('/domain/:domain', async (req, res) => {
 
 });
 
-planPropertyRouter.get('/:id', async (req, res) => {
+planPropertyRouter.get('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('ID: ' + id);
     const property = await PlanPropertyModel.findOne({ _id: id });
@@ -111,7 +112,7 @@ planPropertyRouter.get('/:id', async (req, res) => {
 
 });
 
-planPropertyRouter.delete('/:id', async (req, res) => {
+planPropertyRouter.delete('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     console.log('DELETE ID: ' + id);
     const property = await PlanPropertyModel.deleteOne({ _id: id });

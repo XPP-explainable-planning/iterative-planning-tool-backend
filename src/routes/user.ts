@@ -1,3 +1,4 @@
+import { sassMiddleware } from 'node-sass-middleware';
 import { authForward } from './../middleware/auth';
 import { UserModel } from './../db_schema/user';
 import express from 'express';
@@ -35,10 +36,14 @@ userRouter.post('/login', authForward, async(req, res) => {
         const username = req.body.name;
         const password = req.body.password;
         const user = await UserModel.findByCredentials(username, password);
-        console.log(user);
+        // const user = await UserModel.findOne({ name: username});
         if (!user) {
             return res.status(401).send({ error: 'Login failed! Check authentication credentials'});
         }
+        // user.password = password;
+        // await user?.save();
+        // console.log(user);
+        // console.log('gen token');
         const token = await user.generateAuthToken();
         res.send({ user, token });
     } catch (error) {
