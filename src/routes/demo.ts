@@ -79,19 +79,20 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
             return res.status(403).send('create demo failed');
         }
 
-        await demo.save((reason) => { console.log('Reason fail demo: ' + reason); });
+        await demo.save();
 
+        const demoId = demo._id.toString();
+        console.log('DemoId: ' + demoId);
         // copy plan-properties
         const planProperties = await PlanPropertyModel.find({ project: project?._id, isUsed: true });
         console.log('Copy Plan Properties #' + planProperties.length);
         for (const pp of planProperties) {
             const newPP = new PlanPropertyModel(pp);
             newPP._id = undefined;
-            newPP.project = demo._id;
+            newPP.project = demoId;
             newPP.isNew = true;
-            newPP.save((reason) => { console.log('Reason fail property: ' + reason); });
+            const storedPP = await newPP.save();
         }
-
 
     } catch (ex) {
         res.send(ex.message);
@@ -99,8 +100,9 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
     }
 
     try {
-
-        const planProperties = await PlanPropertyModel.find({ project: demo._id, isUsed: true });
+        const demoId = mongoose.Types.ObjectId(demo._id.toString());
+        const planProperties = await PlanPropertyModel.find({ project: demoId});
+        console.log('#planProperties: ' + planProperties.length);
 
         DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
         const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
@@ -115,7 +117,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
             async (err) => {
                 console.log('DEMO: generate failed: ' + err);
                 await DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
-                 demoGen.tidyUp();
+                demoGen.tidyUp();
             }
         );
 

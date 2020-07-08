@@ -52,7 +52,7 @@ plannerRouter.post('/plan', authUserStudy, async (req, res) => {
             console.log('Store run for user study user');
             await planRun.save();
             const usPlanRun = new USPlanRunModel({
-                user: req.userStudyUser.prolificId,
+                user: req.userStudyUser._id,
                 planRun: planRun._id,
             });
             await usPlanRun.save();
@@ -198,7 +198,7 @@ plannerRouter.post('/mugs-save/:id', authUserStudy, async (req, res) => {
         await explanationRun.save();
 
         const usExpRun = new USExplanationRunModel({
-            user: req.userStudyUser.prolificId,
+            user: req.userStudyUser._id,
             expRun: explanationRun._id,
         });
         await usExpRun.save();

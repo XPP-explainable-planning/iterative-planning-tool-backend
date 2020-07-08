@@ -71,7 +71,12 @@ export class DemoComputation {
     }
 
     generate_experiment_setting(): ExperimentSetting {
-        return { hard_goals: [], plan_properties: this.planProperties, soft_goals: []};
+        console.log('#PlanProperties: ' + this.planProperties.length);
+        return {
+            hard_goals: this.planProperties.filter(p => p.globalHardGoal).map(p => p.name),
+            plan_properties: this.planProperties,
+            soft_goals: []
+        };
     }
 
     async executeRun(): Promise<string> {
@@ -84,6 +89,8 @@ export class DemoComputation {
             `${this.runFolder}/plan-properties.json`,
             `${this.runFolder}/results`
         ];
+
+        console.log(addArgs);
 
         const options = {
             mode: 'text',
@@ -120,6 +127,7 @@ export class DemoComputation {
                     reject(err);
                 }
                 else {
+                    // console.log(results);
                     resolve(results);
                 }
             });
