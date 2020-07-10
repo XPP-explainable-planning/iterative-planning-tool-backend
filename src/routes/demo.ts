@@ -3,7 +3,7 @@ import { ProjectModel, Project } from './../db_schema/project';
 import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { authForward } from './../middleware/auth';
 import { RunStatus } from './../db_schema/run';
-import { PlanPropertyModel, PlanProperty } from './../db_schema/plan_property';
+import { PlanPropertyModel, PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { DemoModel, Demo } from './../db_schema/demo';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -61,6 +61,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
             imageFilePath = imgPort + '/uploads/' + req.file.filename;
         }
 
+        // Copy Project Data:
         const projectData = project?.toJSON();
         delete projectData?._id;
         delete projectData?.itemType;
@@ -81,17 +82,14 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 
         await demo.save();
 
-        const demoId = demo._id.toString();
-        console.log('DemoId: ' + demoId);
         // copy plan-properties
         const planProperties = await PlanPropertyModel.find({ project: project?._id, isUsed: true });
-        console.log('Copy Plan Properties #' + planProperties.length);
         for (const pp of planProperties) {
             const newPP = new PlanPropertyModel(pp);
             newPP._id = undefined;
-            newPP.project = demoId;
+            newPP.project = demo._id;
             newPP.isNew = true;
-            const storedPP = await newPP.save();
+            await newPP.save();
         }
 
     } catch (ex) {
@@ -99,23 +97,19 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         return;
     }
 
+    // Precompute Demo data
     try {
-        const demoId = mongoose.Types.ObjectId(demo._id.toString());
-        const planProperties = await PlanPropertyModel.find({ project: demoId});
-        console.log('#planProperties: ' + planProperties.length);
+        const planProperties = await PlanPropertyModel.find({ project: demo._id});
 
         DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
         const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
-        console.log('DEMO: generate ...');
         demoGen.executeRun().then(
             async (demoFolder) => {
-                console.log('DEMO: generate successful');
                 const updatedDemoDoc = await DemoModel.updateOne({ _id: demo?._id},
                     { $set: { definition: demoFolder, status: RunStatus.finished } });
                 demoGen.tidyUp();
             },
             async (err) => {
-                console.log('DEMO: generate failed: ' + err);
                 await DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
                 demoGen.tidyUp();
             }
@@ -137,8 +131,6 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 demoRouter.put('/', auth, async (req, res) => {
 
     try {
-        console.log('-------------------- >  UPDATE Demo');
-        console.log(req.body);
         const demo: Demo | null = await DemoModel.findById(req.body._id);
 
         if (!demo) {
@@ -163,22 +155,19 @@ demoRouter.put('/', auth, async (req, res) => {
 
 demoRouter.post('/cancel/:id', auth, async (req, res) => {
 
-    console.log('Cancel id: ' + req.params.id);
     const id = mongoose.Types.ObjectId(req.params.id);
 
     const demo = await DemoModel.findOne({ _id: id });
 
     if (!demo) {
-        console.log('Demo not found!');
         return res.status(404).send({ message: 'not found demo' });
     }
 
     cancelDemoComputation(demo._id.toString()). then(
-        async (canceld) => {
-            console.log('Demo cancel successful: ' + canceld);
+        async (canceled) => {
             await DemoModel.deleteOne({ _id: id });
             res.send({
-                successful: canceld,
+                successful: canceled,
                 data: demo
     });
         },
@@ -190,35 +179,18 @@ demoRouter.post('/cancel/:id', auth, async (req, res) => {
         });
 });
 
+
 demoRouter.get('', authForward, async (req, res) => {
 
     try {
-        let demos;
-        if (req.user) {
-            demos = await DemoModel.find();
-            // demos = await (await DemoModel.find({ user: req.user._id, public: false})).concat(await DemoModel.find({ public: true}));
-        } else {
-            const allDemos: Demo[] = await DemoModel.find().populate('settings');
-            demos = allDemos.filter(d => {
-                const p = d.settings.public;
-                d.settings = d.settings._id;
-                return p;
-            });
-        }
+        const allDemos: Demo[] = await DemoModel.find().populate('settings');
+        const demos = allDemos.filter(d => {
+            const p = d.settings.public;
+            d.settings = d.settings._id;
+            return p || (req.user && d.user === req.user._id);
+        });
 
-        // for (const demo of demos) {
-        //     const project: Project | null = await ProjectModel.findById(demo.project);
-
-        //     console.log(project);
-        //     demo.animationSettings = project?.animationSettings;
-
-        //     await demo.save();
-        // }
-
-
-        if (!demos) { return res.status(404).send({ message: 'not found demo' }); }
-        console.log('GET demos: #' + demos.length);
-        console.log(demos);
+        if (!demos) { return res.status(404).send({ message: 'No demos found' }); }
 
         res.send({
             data: demos
@@ -231,7 +203,7 @@ demoRouter.get('', authForward, async (req, res) => {
 demoRouter.get('/:id', authForward, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     const demo = await DemoModel.findOne({ _id: id });
-    if (!demo) { return res.status(404).send({ message: 'not found demo' }); }
+    if (!demo) { return res.status(404).send({ message: 'Demo not found.' }); }
     res.send({
         data: demo
     });
@@ -240,10 +212,9 @@ demoRouter.get('/:id', authForward, async (req, res) => {
 
 demoRouter.delete('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
-    console.log('DELETE: demo ' + id);
 
     const demo: Demo | null = await DemoModel.findById(id);
-    if (!demo) { return res.status(404).send({ message: 'not found demo' }); }
+    if (!demo) { return res.status(404).send({ message: 'Demo not found.' }); }
 
     if (demo.summaryImage) {
         deleteUploadFile(demo.summaryImage);
@@ -253,14 +224,12 @@ demoRouter.delete('/:id', auth, async (req, res) => {
 
     // delete properties
     const propertyDeleteResult = await PlanPropertyModel.deleteMany({ project: id.toHexString() });
-    if (!propertyDeleteResult) { return res.status(404).send({ message: 'Problem during project deletion occurred' }); }
+    if (!propertyDeleteResult) { return res.status(404).send({ message: 'Problem during demo deletion occurred' }); }
 
     await ExecutionSettingsModel.deleteOne({ _id: demo.settings });
 
     const result = await DemoModel.deleteOne({ _id: id });
-    if (!result) { return res.status(404).send({ message: 'not found demo' }); }
-
-
+    if (!result) { return res.status(404).send({ message: 'Demo deletion failed.' }); }
 
     res.send({
         data: result

@@ -5,7 +5,7 @@ import 'fs';
 
 import { Project } from '../db_schema/project';
 import { PlanRun, ExplanationRun } from '../db_schema/run';
-import { PlanProperty } from '../db_schema/plan_property';
+import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
 import { writeFileSync, readFileSync } from 'fs';

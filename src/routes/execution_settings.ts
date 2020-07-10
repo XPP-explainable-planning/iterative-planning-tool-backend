@@ -1,11 +1,6 @@
 import { ExecutionSettings, ExecutionSettingsModel } from './../db_schema/execution_settings';
-import { authForward } from './../middleware/auth';
-import { RunStatus } from './../db_schema/run';
-import { PlanPropertyModel, PlanProperty } from './../db_schema/plan_property';
-import { DemoModel, Demo } from './../db_schema/demo';
 import express from 'express';
 import mongoose from 'mongoose';
-import { DemoComputation, cancelDemoComputation } from '../planner/demo-computation';
 import { auth } from '../middleware/auth';
 
 export const executionSettingsRouter = express.Router();
@@ -17,7 +12,7 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     const updateSettings: ExecutionSettings = req.body;
 
     const settings: ExecutionSettings | null = await ExecutionSettingsModel.findOne({ _id: id });
-    if (!settings) { return res.status(404).send({ message: 'not found settings' }); }
+    if (!settings) { return res.status(404).send({ message: 'Settings could not be found.' }); }
 
     settings.maxRuns = updateSettings.maxRuns;
     settings.allowQuestions = updateSettings.allowQuestions;
@@ -29,12 +24,9 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.maxTime = updateSettings.maxTime;
     settings.showAnimation = updateSettings.showAnimation;
 
-    // console.log(settings);
-
     const saveResult = await settings.save();
-    if (!saveResult) { return res.status(404).send({ message: 'update failed' }); }
+    if (!saveResult) { return res.status(404).send({ message: 'Settings update failed.' }); }
 
-    console.log('settings updated');
     res.send({
         data: settings
     });
@@ -44,13 +36,10 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
 
 executionSettingsRouter.get('/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
-    console.log('Get settings: ' + id);
     const settings = await ExecutionSettingsModel.findOne({ _id: id });
     if (!settings) {
-        return res.status(404).send({ message: 'not found settings' });
+        return res.status(404).send({ message: 'Settings could not be found.' });
     }
-    // settings.showAnimation = false;
-    // await settings.save();
     res.send({
         data: settings
     });
@@ -60,9 +49,8 @@ executionSettingsRouter.get('/:id', async (req, res) => {
 executionSettingsRouter.delete('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     const settings = await ExecutionSettingsModel.deleteOne({ _id: id });
-    if (!settings) { return res.status(404).send({ message: 'not found demo' }); }
+    if (!settings) { return res.status(404).send({ message: 'Settings could not be found.' }); }
     res.send({
         data: settings
     });
-
 });

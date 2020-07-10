@@ -14,11 +14,9 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         console.log('Storage file:');
         console.log(file);
-        // console.log(__dirname);
         cb(null, path.join(path.resolve(__dirname, '..'), 'uploads'));
     },
     filename: (req, file, cb) => {
-        // cb(null, file.originalname);
         cb(null, Date.now() + file.originalname);
     },
 });
@@ -42,10 +40,6 @@ const upload = multer({
 
 pddlFileRouter.post('/', upload.single('content'), async (req, res) => {
     try {
-        console.log('UPLOAD FILE');
-        console.log(req.body);
-        console.log(req.file);
-        // console.log(req.body);
         const file = new FileModel({
             name: req.body.name,
             path: imgPort + '/uploads/' + req.file.filename,
@@ -53,14 +47,13 @@ pddlFileRouter.post('/', upload.single('content'), async (req, res) => {
             domain: req.body.domain
         });
         if (!file) {
-            console.log('File ERROR');
-            return res.status(403).send('not found file');
+            return res.status(403).send('File could not be saved.');
         }
         const data = await file.save();
-        // console.log('File: ' + file);
+
         res.send({
             status: true,
-            message: 'File is uploaded',
+            message: 'File uploaded successfully.',
             data
         });
     } catch (ex) {
@@ -70,11 +63,9 @@ pddlFileRouter.post('/', upload.single('content'), async (req, res) => {
 
 pddlFileRouter.get('/type/:type', async (req, res) => {
     try {
-        // console.log('PDDL FILE: GET');
         const fileType = req.params.type;
         const pddlFiles = await  FileModel.find({ type: fileType });
-        console.log('GET PDDL FILES: #' + pddlFiles.length + ' of type: ' + fileType);
-        if (!pddlFiles) { return res.status(404).send({ message: 'not found PDDL files' }); }
+        if (!pddlFiles) { return res.status(404).send({ message: 'No PDDL files found.' }); }
         res.send({
             data: pddlFiles
         });
@@ -88,7 +79,7 @@ pddlFileRouter.get('/:id', async (req, res) => {
         const id = mongoose.Types.ObjectId(req.params.id);
         console.log('ID: ' + id);
         const pddlFile = await FileModel.findOne({ _id: id });
-        if (!pddlFile) { return res.status(404).send({ message: 'not found PDDL file' }); }
+        if (!pddlFile) { return res.status(404).send({ message: 'No PDDL file found.' }); }
         res.send({
             data: pddlFile
         });
@@ -100,10 +91,10 @@ pddlFileRouter.get('/:id', async (req, res) => {
 pddlFileRouter.get('/:id/goal-facts', async (req, res) => {
     try {
         const id = mongoose.Types.ObjectId(req.params.id);
-        // console.log('Goal facts ID: ' + id);
-        const pddlFileModel = await FileModel.findOne({ _id: id });
-        if (!pddlFileModel) { return res.status(404).send({ message: 'not found PDDL file' }); }
-        const pddlFile = pddlFileModel.toJSON() as File;
+
+        const pddlFile = await FileModel.findOne({ _id: id });
+        if (!pddlFile) { return res.status(404).send({ message: 'No PDDL file found.' }); }
+
         const goals: string[] = await getGoalFacts(pddlFile);
         res.send({
             data: goals
@@ -116,10 +107,9 @@ pddlFileRouter.get('/:id/goal-facts', async (req, res) => {
 pddlFileRouter.delete('/:id', async (req, res) => {
     try {
         const id = mongoose.Types.ObjectId(req.params.id);
-        console.log('DELETE ID: ' + id);
         const pddlFile = await FileModel.deleteOne({ _id: id });
-        // console.log(pddlFile);
-        if (!pddlFile) { return res.status(404).send({ message: 'not found PDDL file' }); }
+        if (!pddlFile) { return res.status(404).send({ message: 'No PDDL file found.' }); }
+
         res.send({
             data: pddlFile
         });

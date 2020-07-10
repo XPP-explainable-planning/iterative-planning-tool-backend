@@ -1,7 +1,7 @@
 import { demoGenerator, resultsPath, serverResultsPath } from './../settings';
 import { Demo } from './../db_schema/demo';
 import { uploadsPath } from '../settings';
-import { PlanProperty } from '../db_schema/plan_property';
+import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 
 import path from 'path';
 import { writeFileSync } from 'fs';

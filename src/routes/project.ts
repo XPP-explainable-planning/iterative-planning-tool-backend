@@ -1,6 +1,6 @@
 import { ExecutionSettingsModel } from './../db_schema/execution_settings';
-import { PlanRunModel, PlanRun, ExplanationRunModel } from './../db_schema/run';
-import { PlanPropertyModel } from './../db_schema/plan_property';
+import { ExplanationRunModel, PlanRun, PlanRunModel } from './../db_schema/run';
+import { PlanPropertyModel } from '../db_schema/plan-properties/plan_property';
 import { Project } from './../db_schema/project';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -10,7 +10,6 @@ import { TranslatorCall } from '../planner/general_planner';
 import { experimentsRootPath } from '../settings';
 import { deleteUploadFile } from '../planner/pddl_file_utils';
 import { ExecutionSettingsModel } from '../db_schema/execution_settings';
-import { settings } from 'cluster';
 
 export const projectRouter = express.Router();
 
@@ -19,15 +18,11 @@ async function computeAndStoreSchema(project: Project): Promise<Project | null> 
     try {
         const planner = new TranslatorCall(experimentsRootPath, project);
         await planner.executeRun();
-        // console.log('Schema translated: ' + project.taskSchema);
 
-        const data = await ProjectModel.updateOne({ _id: project._id},
+        await ProjectModel.updateOne({ _id: project._id},
             { $set: { taskSchema: project.taskSchema} });
-        // console.log(data);
 
-        const resProject: Project | null = await ProjectModel.findOne({ _id: project._id }).lean();
-        // console.log(resProject);
-        return resProject;
+        return await ProjectModel.findOne({ _id: project._id}).lean();
     } catch {
         await ProjectModel.deleteOne({ _id: project._id});
         return null;
@@ -51,8 +46,7 @@ projectRouter.post('/', async (req, res) => {
             settings: settingsId
         });
         if (!projectModel) {
-            console.log('project ERROR');
-            return res.status(403).send('create project failed');
+            return res.status(403).send('Create project failed.');
         }
 
         projectModel.save().then(async v => {
@@ -134,18 +128,8 @@ projectRouter.put('/:id', async (req, res) => {
 // });
 
 projectRouter.get('', async (req, res) => {
-    console.log('GET project');
     const projects = await ProjectModel.find({ user: req.user._id});
-    // const projects = await ProjectModel.find();
-    // const projects = await ProjectModel.find();
-
-    // for (const p of projects) {
-    //     // console.log('update global hard goals in project');
-    //     // p.globalHardGoals = [];
-    //     // await p.save();
-    // }
-
-    if (!projects) { return res.status(404).send({ message: 'not found project' }); }
+    if (!projects) { return res.status(404).send({ message: 'No project found.' }); }
     res.send({
         data: projects
     });
@@ -153,14 +137,10 @@ projectRouter.get('', async (req, res) => {
 });
 
 
-
-
-
 projectRouter.get('/:id', async (req, res) => {
-    console.log('GET project id: ' + req.params.id);
     const id = mongoose.Types.ObjectId(req.params.id);
     const project = await ProjectModel.findOne({ _id: id });
-    if (!project) { return res.status(404).send({ message: 'not found project' }); }
+    if (!project) { return res.status(404).send({ message: 'No project found.' }); }
     res.send({
         data: project
     });
@@ -169,11 +149,10 @@ projectRouter.get('/:id', async (req, res) => {
 
 projectRouter.delete('/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
-    console.log('DELETE Project ID: ' + id);
 
     // delete project
     const projectDoc = await ProjectModel.findOne({ _id: id });
-    if (!projectDoc) { return res.status(404).send({ message: 'not found project' }); }
+    if (!projectDoc) { return res.status(404).send({ message: 'No project found.' }); }
 
     const project: Project = projectDoc?.toJSON() as Project;
 
@@ -198,11 +177,11 @@ projectRouter.delete('/:id', async (req, res) => {
     await ExecutionSettingsModel.deleteOne({ _id: projectDoc.settings });
 
     // delete Project
-    const projectDeletResult = await ProjectModel.deleteOne({ _id: id });
-    if (!projectDeletResult) { return res.status(404).send({ message: 'not found project' }); }
+    const projectDeleteResult = await ProjectModel.deleteOne({ _id: id });
+    if (!projectDeleteResult) { return res.status(404).send({ message: 'No project found.' }); }
 
     res.send({
-        data: projectDeletResult
+        data: projectDeleteResult
     });
 
 });

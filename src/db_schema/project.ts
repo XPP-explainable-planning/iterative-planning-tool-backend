@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { File, FileSchema } from './file';
-import { PlanProperty } from './plan_property';
+import { PlanProperty } from './plan-properties/plan_property';
 import { ExecutionSettings } from './execution_settings';
 
 

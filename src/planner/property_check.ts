@@ -1,7 +1,7 @@
 import { Project } from '../db_schema/project';
 import path from 'path';
 import { PlanRun } from '../db_schema/run';
-import { PlanProperty } from '../db_schema/plan_property';
+import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import { PythonShell } from 'python-shell';
 

@@ -20,11 +20,11 @@ import { projectRouter } from './routes/project';
 import { indexRouter } from './routes';
 import { pddlFileRouter } from './routes/pddl_file';
 import { planPropertyRouter } from './routes/plan_property';
-import  { plannerRouter} from './routes/planner';
-import { runRouter } from './routes/run';
+import  { plannerRouter} from './routes/planner-runs/planner';
+import { runRouter } from './routes/planner-runs/run';
 import { demoRouter } from './routes/demo';
-import { userStudyRouter } from './routes/user-strudy';
-import { userStudyUserRouter } from './routes/user-study-user';
+import { userStudyRouter } from './routes/user-study/user-strudy';
+import { userStudyUserRouter } from './routes/user-study/user-study-user';
 
 const app = express();
 const cors = require('cors');

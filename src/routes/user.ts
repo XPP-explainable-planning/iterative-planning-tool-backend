@@ -8,8 +8,6 @@ import { auth } from '../middleware/auth';
 export const userRouter = express.Router();
 
 userRouter.post('/', async (req, res) => {
-    // Create a new user
-    console.log('Register ...');
     try {
         const userExists = await UserModel.findOne({ name: req.body.name});
         if (userExists) {
@@ -26,7 +24,6 @@ userRouter.post('/', async (req, res) => {
 });
 
 userRouter.post('/login', authForward, async(req, res) => {
-    //Login a registered user
     console.log('Login ...');
     try {
         if (req.user) {
@@ -36,14 +33,11 @@ userRouter.post('/login', authForward, async(req, res) => {
         const username = req.body.name;
         const password = req.body.password;
         const user = await UserModel.findByCredentials(username, password);
-        // const user = await UserModel.findOne({ name: username});
+
         if (!user) {
             return res.status(401).send({ error: 'Login failed! Check authentication credentials'});
         }
-        // user.password = password;
-        // await user?.save();
-        // console.log(user);
-        // console.log('gen token');
+
         const token = await user.generateAuthToken();
         res.send({ user, token });
     } catch (error) {
@@ -54,14 +48,10 @@ userRouter.post('/login', authForward, async(req, res) => {
 
 
 userRouter.get('', auth, async(req, res) => {
-    // View logged in user profile
-    console.log('Get User');
-    console.log(req.user);
     res.send({ data: req.user });
 });
 
 userRouter.post('/logout', auth, async (req, res) => {
-    // Log user out of the application
     console.log('Logout ...');
     try {
         req.user.tokens = req.user.tokens.filter((token) => {

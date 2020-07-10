@@ -1,16 +1,13 @@
 import { UserStudy } from './../db_schema/survey';
-import { UserStudyModel } from './../db_schema/user-study';
+import { UserStudyModel } from '../../db_schema/user-study/user-study';
 import express from 'express';
 import mongoose from 'mongoose';
-import { auth, authForward, authUserStudy } from '../middleware/auth';
+import { auth, authForward, authUserStudy } from '../../middleware/auth';
 
 export const userStudyRouter = express.Router();
 
 
 userStudyRouter.post('/', auth, async (req, res) => {
-    console.log('Create User Study');
-    console.log('body');
-    console.log(req.body);
     try {
         const userStudy = new UserStudyModel(req.body);
         userStudy.user = req.user._id;
@@ -27,7 +24,6 @@ userStudyRouter.post('/', auth, async (req, res) => {
     }
 
     catch (ex) {
-        console.log('Error: ' + ex.message);
         res.send(ex.message);
     }
 });
@@ -66,10 +62,7 @@ userStudyRouter.get('/', authForward, async (req, res) => {
             userStudies = await UserStudyModel.find({ available: true});
         }
 
-
-        if (!userStudies) { return res.status(404).send({ message: 'lookup user studies failed' }); }
-
-        console.log('User Studies: #' + userStudies.length);
+        if (!userStudies) { return res.status(404).send({ message: 'Lookup user studies failed.' }); }
 
         res.send({
             data: userStudies
@@ -83,17 +76,12 @@ userStudyRouter.get('/', authForward, async (req, res) => {
 
 
 userStudyRouter.get('/:id', authForward, authUserStudy, async (req, res) => {
-    console.log('get user study: ');
-    console.log(req);
-    console.log(req.user);
-    console.log(req.userStudyUser);
     if (! req.user && ! req.userStudyUser) {
-        console.log('User Study access denied');
         return res.status(401).send({ message: 'Not authorized to access this resource' });
     }
     const id = mongoose.Types.ObjectId(req.params.id);
     const userStudy = await UserStudyModel.findOne({ _id: id });
-    if (!userStudy) { return res.status(404).send({ message: 'not found user study' }); }
+    if (!userStudy) { return res.status(404).send({ message: 'No user study found.' }); }
     res.send({
         data: userStudy
     });
@@ -103,7 +91,7 @@ userStudyRouter.get('/:id', authForward, authUserStudy, async (req, res) => {
 userStudyRouter.delete('/:id', auth, async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
     const userStudy = await UserStudyModel.deleteOne({ _id: id });
-    if (!userStudy) { return res.status(404).send({ message: 'not found user study' }); }
+    if (!userStudy) { return res.status(404).send({ message: 'No user study found.' }); }
     res.send({
         data: userStudy
     });
