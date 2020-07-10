@@ -4,11 +4,11 @@ import * as child from 'child_process';
 import 'fs';
 
 import { Project } from '../db_schema/project';
-import { PlanRun, ExplanationRun } from '../db_schema/run';
+import { ExplanationRun, PlanRun } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
-import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
-import { writeFileSync, readFileSync } from 'fs';
+import { ltlkit, planner, resultsPath, serverResultsPath, spot, uploadsPath } from '../settings';
+import { readFileSync, writeFileSync } from 'fs';
 import { CallResult, pythonShellCallFD, pythonShellCallSimple } from './python-call';
 
 

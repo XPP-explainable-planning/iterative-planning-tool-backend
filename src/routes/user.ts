@@ -1,4 +1,3 @@
-import { sassMiddleware } from 'node-sass-middleware';
 import { authForward } from './../middleware/auth';
 import { UserModel } from './../db_schema/user';
 import express from 'express';

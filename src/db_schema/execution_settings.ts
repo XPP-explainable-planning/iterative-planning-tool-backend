@@ -1,5 +1,5 @@
 import { ExecutionSettings } from './execution_settings';
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ExecutionSettings  extends Document{
     maxRuns: number;

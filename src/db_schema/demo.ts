@@ -1,7 +1,6 @@
 import { RunStatus } from './run';
-import { Project, BaseProjectModel } from './project';
-import mongoose, { Schema, Document } from 'mongoose';
-import { ExecutionSettings } from './execution_settings';
+import { BaseProjectModel, Project } from './project';
+import { Schema } from 'mongoose';
 
 export interface Demo  extends Project{
     status: RunStatus;

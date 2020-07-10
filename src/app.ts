@@ -1,17 +1,12 @@
 import { executionSettingsRouter } from './routes/execution_settings';
-import { auth, authUserStudy } from './middleware/auth';
+import { auth } from './middleware/auth';
 import { userRouter } from './routes/user';
-
-console.log('-------- EXPLORE BACKEND ---------');
-
-import HttpErrors from 'http-errors';
+import createError from 'http-errors';
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
-import * as session from 'express-session';
 
 import logger from 'morgan';
-import  createError from 'http-errors';
 import sassMiddleware from 'node-sass-middleware';
 
 import errorMiddleware from './middleware/error.middleware';
@@ -20,11 +15,13 @@ import { projectRouter } from './routes/project';
 import { indexRouter } from './routes';
 import { pddlFileRouter } from './routes/pddl_file';
 import { planPropertyRouter } from './routes/plan_property';
-import  { plannerRouter} from './routes/planner-runs/planner';
+import { plannerRouter } from './routes/planner-runs/planner';
 import { runRouter } from './routes/planner-runs/run';
 import { demoRouter } from './routes/demo';
 import { userStudyRouter } from './routes/user-study/user-strudy';
 import { userStudyUserRouter } from './routes/user-study/user-study-user';
+
+console.log('-------- EXPLORE BACKEND ---------');
 
 const app = express();
 const cors = require('cors');

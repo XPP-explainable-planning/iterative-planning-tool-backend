@@ -1,19 +1,19 @@
 import { settings } from 'cluster';
-import { ProjectModel, Project } from './../db_schema/project';
+import { ProjectModel } from './../db_schema/project';
 import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { authForward } from './../middleware/auth';
 import { RunStatus } from './../db_schema/run';
-import { PlanPropertyModel, PlanProperty } from '../db_schema/plan-properties/plan_property';
-import { DemoModel, Demo } from './../db_schema/demo';
+import { PlanPropertyModel } from '../db_schema/plan-properties/plan_property';
+import { Demo, DemoModel } from './../db_schema/demo';
 import express from 'express';
 import mongoose from 'mongoose';
-import { DemoComputation, cancelDemoComputation } from '../planner/demo-computation';
+import { cancelDemoComputation, DemoComputation } from '../planner/demo-computation';
 import { auth } from '../middleware/auth';
 
 import multer from 'multer';
 import path from 'path';
 import { experimentsRootPath } from '../settings';
-import { deleteUploadFile, deleteResultFile } from '../planner/pddl_file_utils';
+import { deleteResultFile, deleteUploadFile } from '../planner/pddl_file_utils';
 
 export const demoRouter = express.Router();
 

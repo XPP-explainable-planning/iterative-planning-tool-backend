@@ -1,5 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { File, FileModel, FileSchema } from './file';
+import mongoose, { Document, Schema } from 'mongoose';
 import { PlanProperty } from './plan-properties/plan_property';
 import { Project } from './project';
 

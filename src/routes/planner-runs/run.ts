@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 
-import { PlanRun, PlanRunModel, ExplanationRun, ExplanationRunModel, RunStatus } from '../../db_schema/run';
+import { ExplanationRunModel, PlanRun, PlanRunModel } from '../../db_schema/run';
 import { deleteResultFile } from '../../planner/pddl_file_utils';
 
 

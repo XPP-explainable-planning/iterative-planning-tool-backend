@@ -1,6 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { } from 'validate-typescript';
-import * as bcrypt from 'bcrypt';
+import mongoose, { Document, Schema } from 'mongoose';
 import * as jwt from 'jsonwebtoken';
 
 export interface USUser extends Document{

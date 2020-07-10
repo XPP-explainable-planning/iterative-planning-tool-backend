@@ -1,5 +1,4 @@
-import { Demo } from '../demo';
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export enum UserStudyStepType {
     description = 'description',

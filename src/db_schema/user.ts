@@ -1,5 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { } from 'validate-typescript';
+import mongoose, { Document, Schema } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 

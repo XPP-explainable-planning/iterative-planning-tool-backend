@@ -1,10 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import multer from 'multer';
-import path from 'path';
 
-import { PlanPropertyModel, PlanProperty } from '../db_schema/plan-properties/plan_property';
-import { ActionSetModel } from '../db_schema/plan-properties/action_set';
+import { PlanProperty, PlanPropertyModel } from '../db_schema/plan-properties/plan_property';
 import { auth } from '../middleware/auth';
 
 export const planPropertyRouter = express.Router();

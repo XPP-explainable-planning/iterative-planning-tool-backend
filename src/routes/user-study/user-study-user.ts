@@ -1,6 +1,5 @@
-import { authForward, authUserStudy } from '../../middleware/auth';
+import { authUserStudy } from '../../middleware/auth';
 import express from 'express';
-import { auth } from '../../middleware/auth';
 import { USUserModel } from '../../db_schema/user-study/user-study-user';
 
 export const userStudyUserRouter = express.Router();

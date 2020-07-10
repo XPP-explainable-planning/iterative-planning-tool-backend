@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { File, FileSchema } from './file';
 import { PlanProperty } from './plan-properties/plan_property';
 import { ExecutionSettings } from './execution_settings';

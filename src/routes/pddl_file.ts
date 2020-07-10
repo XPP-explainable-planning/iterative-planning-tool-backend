@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import multer from 'multer';
 import path from 'path';
 
-import { File, FileModel } from '../db_schema/file';
+import { FileModel } from '../db_schema/file';
 import { getGoalFacts } from '../planner/pddl_file_utils';
 
 export const pddlFileRouter = express.Router();

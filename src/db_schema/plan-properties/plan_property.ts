@@ -1,6 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { ActionSet, ActionSetSchema } from './action_set';
-import { Project } from '../project';
 
 export interface PlanProperty extends Document {
     name: string;
