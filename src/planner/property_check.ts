@@ -1,13 +1,12 @@
-import { Project } from '../db_schema/project';
 import path from 'path';
 import { PlanRun } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
-import { PythonShell } from 'python-shell';
-
 import * as child from 'child_process';
 import { writeFileSync } from 'fs';
 import { propertyChekcer, resultsPath, uploadsPath } from '../settings';
+import Promise from 'promise';
+import { pythonShellCallSimple } from './python-call';
 
 export class PropertyCheck {
 
@@ -16,8 +15,7 @@ export class PropertyCheck {
     constructor(
         protected root: string,
         private planProperties: PlanProperty[],
-        private planRun: PlanRun
-    )
+        private planRun: PlanRun)
     {
         this.runFolder = path.join(root, String(this.planRun.project._id));
 
@@ -26,13 +24,10 @@ export class PropertyCheck {
         const domainFileName = path.basename(this.planRun.project.domainFile.path);
         const problemFileName = path.basename(this.planRun.project.problemFile.path);
         const taskSchemaFileName = path.basename(this.planRun.project.taskSchema);
-        const planFileName = 'plan.sas';
 
         child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
         child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
         child.execSync(`cp ${path.join(resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'schema.json')}`);
-        // child.execSync(`cp ${path.join(resultsPath, planFileName)} ${path.join(this.runFolder, 'plan.sas')}`);
-
 
         writeFileSync(path.join(this.runFolder, 'exp_setting.json'),
             JSON.stringify(this.generate_experiment_setting()),
@@ -41,8 +36,6 @@ export class PropertyCheck {
         writeFileSync(path.join(this.runFolder, 'plan.sas'),
             this.planRun.planString,
             'utf8');
-
-        // console.log('plan property checker initialized');
     }
 
     generate_experiment_setting(): ExperimentSetting {
@@ -56,7 +49,8 @@ export class PropertyCheck {
             path.join(this.runFolder, 'problem.pddl'),
             path.join(this.runFolder, 'exp_setting.json'),
             path.join(this.runFolder, 'schema.json'),
-            path.join(this.runFolder, 'plan.sas')];
+            path.join(this.runFolder, 'plan.sas')
+        ];
 
         const options = {
             mode: 'text',
@@ -66,32 +60,7 @@ export class PropertyCheck {
             args: addArgs
         };
 
-        const results = await this.pythonShellCall(options);
-
-        // console.log(results);
-
-        // TODO parse results
-        return results;
-
-    }
-
-    pythonShellCall(options: any): Promise<string[]> {
-        // console.log('python call');
-        const p: Promise<string[]> = new Promise((resolve, reject) => {
-            // console.log(options);
-            // @ts-ignore
-            PythonShell.run('main.py', options,  (err: any, results: any) => {
-                if (err) {
-                    // console.log(err);
-                    reject(err);
-                }
-                else {
-                    // console.log(results);
-                    resolve(results);
-                }
-            });
-        });
-        return p;
+        return await pythonShellCallSimple('main.py', options);
     }
 
     tidyUp(): void {

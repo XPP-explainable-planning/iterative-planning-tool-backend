@@ -8,13 +8,14 @@ import { writeFileSync } from 'fs';
 import * as child from 'child_process';
 import { ExperimentSetting } from './experiment_setting';
 import { PythonShell } from 'python-shell';
+import Promise from 'promise';
 
 const runningPythonShells = new Map<string, PythonShell>();
 
 export function cancelDemoComputation(demoId: string): Promise<boolean> {
     console.log('Cancel demo computation run!: ' + demoId);
-    const p: Promise<boolean> = new Promise((resolve, reject) => {
-        if (! runningPythonShells.has(demoId)) {
+    return new Promise((resolve, reject) => {
+        if (!runningPythonShells.has(demoId)) {
             console.log('Cancel demo computation run: run does not exist!');
             resolve(false);
             return;
@@ -36,7 +37,6 @@ export function cancelDemoComputation(demoId: string): Promise<boolean> {
             }
         });
     });
-    return p;
 }
 
 export class DemoComputation {
@@ -100,40 +100,34 @@ export class DemoComputation {
             args: addArgs,
         };
 
-        const returnPromise = new Promise<string>(
+        return new Promise<string>(
             async (resolve, reject) => {
                 this.pythonShellCall(options).then((results) => {
-                    const resultsFolder = `${this.runFolder}/results/demo.json`;
-                    writeFileSync(resultsFolder, results.join('\n'), 'utf8');
+                        const resultsFolder = `${this.runFolder}/results/demo.json`;
+                        writeFileSync(resultsFolder, results.join('\n'), 'utf8');
 
-                    this.copy_experiment_results();
-                    resolve(`${serverResultsPath}/demo_${this.demo._id}`);
-                },
-                (err) => {
-                    reject(err);
-                });
-        });
-
-        return returnPromise;
+                        this.copy_experiment_results();
+                        resolve(`${serverResultsPath}/demo_${this.demo._id}`);
+                    },
+                    (err) => {
+                        reject(err);
+                    });
+            });
 
     }
 
     pythonShellCall(options: any): Promise<string[]> {
-        const p: Promise<string[]> = new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             // @ts-ignore
-            const shell: PythonShell = PythonShell.run('main.py', options,  (err: any, results: any) => {
+            const shell: PythonShell = PythonShell.run('main.py', options, (err: any, results: any) => {
                 if (err) {
-                    // console.warn(err);
                     reject(err);
-                }
-                else {
-                    // console.log(results);
+                } else {
                     resolve(results);
                 }
             });
             runningPythonShells.set(this.demo._id.toString(), shell);
         });
-        return p;
     }
 
     copy_experiment_results(): void {

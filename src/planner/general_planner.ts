@@ -9,12 +9,8 @@ import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import { planner, uploadsPath, spot, ltlkit, resultsPath, serverResultsPath } from '../settings';
 import { writeFileSync, readFileSync } from 'fs';
-import { PythonShell, PythonShellError } from 'python-shell';
+import { CallResult, pythonShellCallFD, pythonShellCallSimple } from './python-call';
 
-interface PlanningResult{
-    planFound: boolean;
-    log: string[];
-}
 
 export class TranslatorCall{
 
@@ -30,7 +26,7 @@ export class TranslatorCall{
 
     create_experiment_setup(): void {
 
-        const out = child.execSync(`mkdir -p ${this.runFolder}`);
+        child.execSync(`mkdir -p ${this.runFolder}`);
         const domainFileName = path.basename(this.project.domainFile.path);
         const problemFileName = path.basename(this.project.problemFile.path);
 
@@ -54,28 +50,10 @@ export class TranslatorCall{
             env: { SPOT_BIN_PATH: spot, LTL2HAO_PATH: ltlkit},
         };
 
-        const results = await this.pythonShellCall(options);
-        // console.log('planner finished');
-        // console.log(results.join('\n'));
+        const results = await pythonShellCallSimple('run_FD.py', options);
         writeFileSync(path.join(resultsPath, `out_${this.project._id}.log`), results.join('\n'), 'utf8');
 
         this.copy_experiment_results();
-    }
-
-    pythonShellCall(options: any): Promise<string[]> {
-        const p: Promise<string[]> = new Promise((resolve, reject) => {
-            // @ts-ignore
-            PythonShell.run('run_FD.py', options,  (err: any, results: any) => {
-                if (err) {
-                    console.warn(err);
-                    reject(err);
-                }
-                else {
-                    resolve(results);
-                }
-            });
-        });
-        return p;
     }
 
     copy_experiment_results(): void {
@@ -89,6 +67,8 @@ export class TranslatorCall{
         child.execSync(`rm -r ${this.runFolder}`);
     }
 }
+
+
 
 export class PlannerCall {
 
@@ -110,7 +90,7 @@ export class PlannerCall {
 
     create_experiment_setup(): void {
 
-        const out = child.execSync(`mkdir -p ${this.runFolder}`);
+        child.execSync(`mkdir -p ${this.runFolder}`);
         const domainFileName = path.basename(this.domainFile);
         const problemFileName = path.basename(this.problemFile);
 
@@ -137,9 +117,6 @@ export class PlannerCall {
         const addArgs = [this.runFolder, '--build', 'release64', `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`, `${this.runFolder}/exp_setting.json`, ...this.plannerSetting];
 
-        // console.log('Command:');
-        // console.log(addArgs);
-
         const options = {
             mode: 'text',
             pythonPath: '/usr/bin/python3',
@@ -149,36 +126,14 @@ export class PlannerCall {
             env: { SPOT_BIN_PATH: spot, LTL2HAO_PATH: ltlkit},
         };
 
-        const plannerResults : PlanningResult = await this.pythonShellCall(options);
+        const plannerResults : CallResult = await pythonShellCallFD(options);
 
         if (plannerResults.planFound) {
             writeFileSync(path.join(resultsPath, `out_${this.runId}.log`), plannerResults.log.join('\n'), 'utf8');
             this.copy_experiment_results();
         }
 
-
         return plannerResults.planFound;
-    }
-
-    pythonShellCall(options: any): Promise<PlanningResult> {
-        const p: Promise<PlanningResult> = new Promise((resolve, reject) => {
-            // @ts-ignore
-            PythonShell.run('run_FD.py', options,  (err: PythonShellError, results: any) => {
-                if (err) {
-                    if (err.exitCode === 12){
-                        resolve({ planFound: false, log: []});
-                        return;
-                    }
-                    console.warn(err);
-                    reject(err);
-                }
-                else {
-                    resolve({ planFound: true, log: results});
-                    // console.log(results);
-                }
-            });
-        });
-        return p;
     }
 
     copy_experiment_results(): void {
@@ -190,6 +145,8 @@ export class PlannerCall {
     }
 }
 
+
+
 const plannerSettingOptPlan = ['--search', 'astar(lmcut())'];
 export class PlanCall extends PlannerCall{
 
@@ -199,18 +156,14 @@ export class PlanCall extends PlannerCall{
     }
 
     copy_experiment_results(): void {
-        // child.spawnSync('cp', [path.join(this.runFolder, 'sas_plan'),
-        //     path.join(resultsPath, `plan_${this.runId}.sas`)]);
-        // this.run.planPath = serverResultsPath + `/plan_${this.runId}.sas`;
-
         const buffer: Buffer = readFileSync(path.join(this.runFolder, 'sas_plan'));
         this.run.planString = buffer.toString('utf8');
-        // console.log('Plan');
-        // console.log(this.run.planString);
 
         this.run.log = serverResultsPath + `/out_${this.runId}.log`;
     }
 }
+
+
 
 const plannerSettingMUGS = ['--heuristic', 'h=hc(nogoods=false, cache_estimates=false)', '--heuristic',
    'mugs_h=mugs_hc(hc=h, all_softgoals=false)', '--search', 'dfs(u_eval=mugs_h)'];
@@ -222,15 +175,8 @@ export class ExplanationCall extends PlannerCall{
     }
 
     copy_experiment_results(): void {
-        // child.spawnSync('cp', [path.join(this.runFolder, 'mugs.json'),
-        //     path.join(resultsPath, `mugs_${this.runId}.json`)]);
-
-        // this.run.result = serverResultsPath + `/mugs_${this.runId}.json`;
-
         const buffer: Buffer = readFileSync(path.join(this.runFolder, 'mugs.json'));
         this.run.result = buffer.toString('utf8');
-        // console.log('MUGS');
-        // console.log(this.run.result);
 
         this.run.log = serverResultsPath + `/out_${this.runId}.log`;
     }
