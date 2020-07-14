@@ -1,5 +1,4 @@
-import { UserStudy } from './../db_schema/survey';
-import { UserStudyModel } from '../../db_schema/user-study/user-study';
+import { UserStudyModel, UserStudy } from '../../db_schema/user-study/user-study';
 import express from 'express';
 import mongoose from 'mongoose';
 import { auth, authForward, authUserStudy } from '../../middleware/auth';
@@ -7,9 +6,9 @@ import { auth, authForward, authUserStudy } from '../../middleware/auth';
 export const userStudyRouter = express.Router();
 
 
-userStudyRouter.post('/', auth, async (req, res) => {
+userStudyRouter.post('/', auth, async (req: any, res) => {
     try {
-        const userStudy = new UserStudyModel(req.body);
+        const userStudy: UserStudy = new UserStudyModel(req.body);
         userStudy.user = req.user._id;
 
         if (!userStudy) {
@@ -52,7 +51,7 @@ userStudyRouter.put('/:id', auth, async (req, res) => {
     }
 });
 
-userStudyRouter.get('/', authForward, async (req, res) => {
+userStudyRouter.get('/', authForward, async (req: any, res) => {
     try {
         let userStudies;
         if (req.user) {
@@ -75,7 +74,7 @@ userStudyRouter.get('/', authForward, async (req, res) => {
 
 
 
-userStudyRouter.get('/:id', authForward, authUserStudy, async (req, res) => {
+userStudyRouter.get('/:id', authForward, authUserStudy, async (req: any, res) => {
     if (! req.user && ! req.userStudyUser) {
         return res.status(401).send({ message: 'Not authorized to access this resource' });
     }

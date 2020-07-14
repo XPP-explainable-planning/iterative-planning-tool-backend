@@ -34,7 +34,7 @@ export interface  PlanRun extends Document{
     name: string;
     type: RunType;
     status: RunStatus;
-    project: Project;
+    project: Project | string;
     planProperties: PlanProperty[];
     hardGoals: string[];
     log: string;

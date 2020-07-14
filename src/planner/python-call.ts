@@ -1,5 +1,4 @@
 import { PythonShell, PythonShellError } from 'python-shell';
-import Promise from 'promise';
 
 export interface CallResult{
     planFound: boolean;

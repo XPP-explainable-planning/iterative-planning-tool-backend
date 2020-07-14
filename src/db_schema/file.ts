@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface File {
+export interface File extends Document{
     name: string;
     domain: string;
     type: string;
@@ -14,5 +14,5 @@ export const FileSchema = new Schema({
     path: { type: String, required: true},
 });
 
-export const FileModel = mongoose.model('file', FileSchema);
+export const FileModel = mongoose.model<File>('file', FileSchema);
 

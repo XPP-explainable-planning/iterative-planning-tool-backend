@@ -38,4 +38,4 @@ const UserStudySchema = new Schema({
     redirectUrl: { type: String, required: false},
 });
 
-export const UserStudyModel = mongoose.model('user-study', UserStudySchema);
+export const UserStudyModel = mongoose.model<UserStudy>('user-study', UserStudySchema);

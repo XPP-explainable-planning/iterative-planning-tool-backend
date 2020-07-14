@@ -4,7 +4,6 @@ import 'assert';
 import path from 'path';
 import * as child from 'child_process';
 import { resultsPath, uploadsPath } from '../settings';
-import Promise from 'promise';
 
 
 export async function getGoalFacts(pddFile: File): Promise<string[]> {

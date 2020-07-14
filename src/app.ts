@@ -18,7 +18,7 @@ import { planPropertyRouter } from './routes/plan_property';
 import { plannerRouter } from './routes/planner-runs/planner';
 import { runRouter } from './routes/planner-runs/run';
 import { demoRouter } from './routes/demo';
-import { userStudyRouter } from './routes/user-study/user-strudy';
+import { userStudyRouter } from './routes/user-study/user-study';
 import { userStudyUserRouter } from './routes/user-study/user-study-user';
 
 console.log('-------- EXPLORE BACKEND ---------');

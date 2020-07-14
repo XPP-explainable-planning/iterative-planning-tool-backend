@@ -1,3 +1,4 @@
+import { Project } from './../db_schema/project';
 import path from 'path';
 import { PlanRun } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan-properties/plan_property';
@@ -5,7 +6,6 @@ import { ExperimentSetting } from './experiment_setting';
 import * as child from 'child_process';
 import { writeFileSync } from 'fs';
 import { propertyChekcer, resultsPath, uploadsPath } from '../settings';
-import Promise from 'promise';
 import { pythonShellCallSimple } from './python-call';
 
 export class PropertyCheck {
@@ -17,13 +17,15 @@ export class PropertyCheck {
         private planProperties: PlanProperty[],
         private planRun: PlanRun)
     {
-        this.runFolder = path.join(root, String(this.planRun.project._id));
+        this.runFolder = path.join(root, String((this.planRun.project as Project)._id));
 
         child.execSync(`mkdir -p ${this.runFolder}`);
 
-        const domainFileName = path.basename(this.planRun.project.domainFile.path);
-        const problemFileName = path.basename(this.planRun.project.problemFile.path);
-        const taskSchemaFileName = path.basename(this.planRun.project.taskSchema);
+        const project: Project = this.planRun.project as Project;
+
+        const domainFileName = path.basename(project.domainFile.path);
+        const problemFileName = path.basename(project.problemFile.path);
+        const taskSchemaFileName = path.basename(project.taskSchema);
 
         child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
         child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);

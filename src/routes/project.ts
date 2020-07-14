@@ -9,7 +9,6 @@ import { ProjectModel } from '../db_schema/project';
 import { TranslatorCall } from '../planner/general_planner';
 import { experimentsRootPath } from '../settings';
 import { deleteUploadFile } from '../planner/pddl_file_utils';
-import { ExecutionSettingsModel } from '../db_schema/execution_settings';
 
 export const projectRouter = express.Router();
 
@@ -30,11 +29,11 @@ async function computeAndStoreSchema(project: Project): Promise<Project | null> 
 }
 
 
-projectRouter.post('/', async (req, res) => {
+projectRouter.post('/', async (req: any, res) => {
     try {
         console.log('POST Project');
 
-        const settingsId = await ExecutionSettingsModel.createProjectDefaultSettings();
+        const settingsId = await (ExecutionSettingsModel as any).createProjectDefaultSettings();
 
         const projectModel = new ProjectModel({
             name: req.body.name,
@@ -127,7 +126,7 @@ projectRouter.put('/:id', async (req, res) => {
 //     }
 // });
 
-projectRouter.get('', async (req, res) => {
+projectRouter.get('', async (req: any, res) => {
     const projects = await ProjectModel.find({ user: req.user._id});
     if (!projects) { return res.status(404).send({ message: 'No project found.' }); }
     res.send({

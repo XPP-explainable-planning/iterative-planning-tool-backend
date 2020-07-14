@@ -7,6 +7,7 @@ export interface Demo  extends Project{
     definition: string;
     introduction: string;
     summaryImage?: string;
+    taskInfo?: string;
 }
 
 const DemoSchema = new Schema({
@@ -14,6 +15,7 @@ const DemoSchema = new Schema({
     introduction: { type: String, required: false},
     status: { type: Number, required: true},
     definition: { type: String, required: false},
+    taskInfo: { type: String, required: false},
 });
 
 export const DemoModel = BaseProjectModel.discriminator<Demo>('demo-project', DemoSchema);

@@ -1,8 +1,8 @@
-import { authForward } from './../middleware/auth';
-import { UserModel } from './../db_schema/user';
+import { authForward} from './../middleware/auth';
 import express from 'express';
 import { UserModel } from '../db_schema/user';
 import { auth } from '../middleware/auth';
+import { Request, Response, NextFunction } from 'express';
 
 export const userRouter = express.Router();
 
@@ -22,7 +22,7 @@ userRouter.post('/', async (req, res) => {
     }
 });
 
-userRouter.post('/login', authForward, async(req, res) => {
+userRouter.post('/login', authForward, async(req: any, res: Response) => {
     console.log('Login ...');
     try {
         if (req.user) {
@@ -31,7 +31,7 @@ userRouter.post('/login', authForward, async(req, res) => {
         console.log('Login');
         const username = req.body.name;
         const password = req.body.password;
-        const user = await UserModel.findByCredentials(username, password);
+        const user = await (UserModel as any).findByCredentials(username, password);
 
         if (!user) {
             return res.status(401).send({ error: 'Login failed! Check authentication credentials'});
@@ -46,14 +46,14 @@ userRouter.post('/login', authForward, async(req, res) => {
 });
 
 
-userRouter.get('', auth, async(req, res) => {
+userRouter.get('', auth, async(req: any, res) => {
     res.send({ data: req.user });
 });
 
-userRouter.post('/logout', auth, async (req, res) => {
+userRouter.post('/logout', auth, async (req: any, res) => {
     console.log('Logout ...');
     try {
-        req.user.tokens = req.user.tokens.filter((token) => {
+        req.user.tokens = req.user.tokens.filter((token: {token: string}) => {
             return token.token !== req.token;
         });
         await req.user.save();

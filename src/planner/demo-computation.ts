@@ -8,7 +8,6 @@ import { writeFileSync } from 'fs';
 import * as child from 'child_process';
 import { ExperimentSetting } from './experiment_setting';
 import { PythonShell } from 'python-shell';
-import Promise from 'promise';
 
 const runningPythonShells = new Map<string, PythonShell>();
 

@@ -1,9 +1,9 @@
+import { Project } from './../db_schema/project';
 import 'process';
 import path from 'path';
 import * as child from 'child_process';
 import 'fs';
 
-import { Project } from '../db_schema/project';
 import { ExplanationRun, PlanRun } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
@@ -151,8 +151,8 @@ const plannerSettingOptPlan = ['--search', 'astar(lmcut())'];
 export class PlanCall extends PlannerCall{
 
     constructor(root: string, private run: PlanRun) {
-        super(plannerSettingOptPlan, root, run._id, run.project.domainFile.path,
-            run.project.problemFile.path, run.planProperties, run.hardGoals, []);
+        super(plannerSettingOptPlan, root, run._id, (run.project as Project).domainFile.path,
+            (run.project as Project).problemFile.path, run.planProperties, run.hardGoals, []);
     }
 
     copy_experiment_results(): void {

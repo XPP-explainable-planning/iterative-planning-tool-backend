@@ -3,16 +3,17 @@ import { PropertyCheck } from '../../planner/property_check';
 import express from 'express';
 import mongoose from 'mongoose';
 
-import { ExplanationRunModel, PlanRun, PlanRunModel, RunStatus } from '../../db_schema/run';
+import { ExplanationRunModel, PlanRun, PlanRunModel, RunStatus, ExplanationRun } from '../../db_schema/run';
 import { ExplanationCall, PlanCall } from '../../planner/general_planner';
 import { experimentsRootPath } from '../../settings';
 import { USExplanationRunModel, USPlanRunModel } from '../../db_schema/user-study/user-study-store';
 import { auth, authUserStudy } from '../../middleware/auth';
+import { Project } from '../../db_schema/project';
 
 
 export const plannerRouter = express.Router();
 
-plannerRouter.post('/plan', authUserStudy, async (req, res) => {
+plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
     const saveRun: boolean = req.query.save ? JSON.parse(req.query.save) : false;
 
     try {
@@ -53,7 +54,8 @@ plannerRouter.post('/plan', authUserStudy, async (req, res) => {
             let propNames: string[] = [];
             if (planFound) {
                 // check which plan properties are satisfied by the plan
-                const planProperties: PlanProperty[] = await PlanPropertyModel.find({ project: planRun.project._id, isUsed: true });
+                const planProperties: PlanProperty[] = await PlanPropertyModel
+                    .find({ project: (planRun.project as Project)._id, isUsed: true });
                 const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, planRun);
                 propNames = await propertyChecker.executeRun();
                 propertyChecker.tidyUp();
@@ -111,14 +113,17 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
         }
         await explanationRun.save();
 
-        const planner = new ExplanationCall(experimentsRootPath, planRun.project, explanationRun);
+        const planner = new ExplanationCall(experimentsRootPath, (planRun.project as Project), explanationRun);
         planner.executeRun().then( async () => {
 
             await ExplanationRunModel.updateOne({ _id: explanationRun._id},
                 { $set: { result: explanationRun.result, log: explanationRun.log, status: RunStatus.finished} });
 
-            const newExpRun = await ExplanationRunModel.findOne({ _id: explanationRun._id});
-            await PlanRunModel.updateOne({ _id: planRunId}, { $set: { explanationRuns: planRun.explanationRuns.concat(newExpRun)}});
+            const newExpRun: ExplanationRun | null = await ExplanationRunModel.findOne({ _id: explanationRun._id});
+            if (! newExpRun) {
+                return res.status(403).send('run could not be stored');
+            }
+            await PlanRunModel.updateOne({ _id: planRunId}, { $set: { explanationRuns: planRun.explanationRuns.concat([newExpRun])}});
 
             // return the plan run with new questionRun elem
             const runReturn = await PlanRunModel.findOne({ _id: planRunId}).populate('planProperties').populate('explanationRuns');
@@ -136,7 +141,7 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
 });
 
 
-plannerRouter.post('/mugs-save/:id', authUserStudy, async (req, res) => {
+plannerRouter.post('/mugs-save/:id', authUserStudy, async (req: any, res) => {
     try {
         if (! req.userStudyUser) {
             return res.status(401).send({ message: 'Access denied.' });

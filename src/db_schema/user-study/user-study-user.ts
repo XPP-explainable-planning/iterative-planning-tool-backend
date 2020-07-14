@@ -6,6 +6,8 @@ export interface USUser extends Document{
     userStudyId: string;
     token?: string;
     finished?: string;
+
+    generateAuthToken: () => Promise<string>;
 }
 
 const USUserSchema =  new Schema<USUser>({

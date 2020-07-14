@@ -1,4 +1,3 @@
-import { ExecutionSettings } from './execution_settings';
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ExecutionSettings  extends Document{

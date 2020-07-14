@@ -10,7 +10,7 @@ export const runRouter = express.Router();
 runRouter.get('/plan-run', async (req, res) => {
 
     const projectId =  mongoose.Types.ObjectId(req.query.projectId);
-    const runs = await PlanRunModel.find({ project: projectId}).populate('planProperties').populate('explanationRuns');
+    const runs = await PlanRunModel.find({ project: projectId.toHexString()}).populate('planProperties').populate('explanationRuns');
     if (!runs) { return res.status(404).send({ message: 'No plan-runs found.' }); }
     res.send({
         data: runs
@@ -32,7 +32,7 @@ runRouter.get('/plan-run/position', async (req, res) => {
     const projectId =  mongoose.Types.ObjectId(req.query.projectId);
     const position = req.query.projectId(req.query.pos);
 
-    const runs = await PlanRunModel.find({ project: projectId}).populate('planProperties').populate('explanationRuns');
+    const runs = await PlanRunModel.find({ project: projectId.toHexString()}).populate('planProperties').populate('explanationRuns');
     if (!runs) { return res.status(404).send({ message: 'no run found' }); }
 
     let returnRun: PlanRun;

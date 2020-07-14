@@ -5,7 +5,10 @@ import * as jwt from 'jsonwebtoken';
 export interface User extends Document{
     name: string;
     password: string | null;
-    tokens: string[];
+    tokens: { token: string }[];
+
+    generateAuthToken: () => Promise<string>;
+    findByCredentials: (username: string, password: string) => User;
 }
 
 const UserSchema =  new Schema<User>({
@@ -29,7 +32,7 @@ const UserSchema =  new Schema<User>({
 
 UserSchema.pre('save', async function (next) {
     // Hash the password before saving the user model
-    const user = this;
+    const user = this as User;
     if (user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8);
     }
@@ -39,8 +42,8 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.generateAuthToken = async function() {
     // Generate an auth token for the user
     const user = this;
-    const token = jwt.sign({ _id: user._id}, process.env.JWT_KEY || '0' );
-    user.tokens = user.tokens.concat({ token});
+    const token: string = jwt.sign({ _id: user._id}, process.env.JWT_KEY || '0' );
+    user.tokens = user.tokens.concat([{ token }]);
     await user.save();
     return token;
 };
@@ -48,8 +51,11 @@ UserSchema.methods.generateAuthToken = async function() {
 UserSchema.statics.findByCredentials = async (username: string, password: string) => {
 
     console.log('find by credentials: ' + username);
-    const user = await UserModel.findOne({ name: username} );
+    const user: User | null = await UserModel.findOne({ name: username} );
     if (!user) {
+        throw new Error('Invalid login credentials');
+    }
+    if (! user.password){
         throw new Error('Invalid login credentials');
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);

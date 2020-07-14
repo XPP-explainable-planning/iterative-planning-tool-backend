@@ -19,7 +19,7 @@ userStudyUserRouter.post('/', async (req, res) => {
 });
 
 
-userStudyUserRouter.post('/logout', authUserStudy,  async (req, res) => {
+userStudyUserRouter.post('/logout', authUserStudy,  async (req: any, res) => {
 
     try {
         req.userStudyUser.token = null;

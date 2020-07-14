@@ -52,7 +52,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
     try {
         console.log('-------------------- >  CREATE Demo');
 
-        const settingsId = await ExecutionSettingsModel.createDemoDefaultSettings();
+        const settingsId = await (ExecutionSettingsModel as any).createDemoDefaultSettings();
         const project = await ProjectModel.findById(req.body.projectId);
 
 
@@ -75,6 +75,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         demo.status = RunStatus.pending;
         demo.settings = settingsId;
         demo.description = req.body.description;
+        demo.taskInfo = req.body.taskInfo;
 
         if (!demo) {
             return res.status(403).send('create demo failed');
@@ -139,8 +140,11 @@ demoRouter.put('/', auth, async (req, res) => {
 
         demo.name = req.body.name;
         demo.description = req.body.description;
+        demo.taskInfo = req.body.taskInfo;
 
         await demo.save();
+
+        console.log(demo.taskInfo);
 
         res.send({
             status: true,
@@ -180,16 +184,16 @@ demoRouter.post('/cancel/:id', auth, async (req, res) => {
 });
 
 
-demoRouter.get('', authForward, async (req, res) => {
+demoRouter.get('', authForward, async (req: any, res) => {
 
     try {
+        console.log(req.user._id.toHexString());
         const allDemos: Demo[] = await DemoModel.find().populate('settings');
         const demos = allDemos.filter(d => {
             const p = d.settings.public;
             d.settings = d.settings._id;
-            return p || (req.user && d.user === req.user._id);
+            return p || (req.user && d.user === req.user._id.toHexString());
         });
-
         if (!demos) { return res.status(404).send({ message: 'No demos found' }); }
 
         res.send({
