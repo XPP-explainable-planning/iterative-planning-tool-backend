@@ -7,15 +7,16 @@ import mongoose from 'mongoose';
 
 import { ProjectModel } from '../db_schema/project';
 import { TranslatorCall } from '../planner/general_planner';
-import { experimentsRootPath } from '../settings';
 import { deleteUploadFile } from '../planner/pddl_file_utils';
+import { env } from 'process';
+import { environment } from '../app';
 
 export const projectRouter = express.Router();
 
 
 async function computeAndStoreSchema(project: Project): Promise<Project | null> {
     try {
-        const planner = new TranslatorCall(experimentsRootPath, project);
+        const planner = new TranslatorCall(environment.experimentsRootPath, project);
         await planner.executeRun();
 
         await ProjectModel.updateOne({ _id: project._id},
@@ -49,7 +50,6 @@ projectRouter.post('/', async (req: any, res) => {
         }
 
         projectModel.save().then(async v => {
-            console.log(projectModel);
 
             // compute and store schema
             const project: Project = projectModel.toJSON() as Project;

@@ -20,8 +20,14 @@ import { runRouter } from './routes/planner-runs/run';
 import { demoRouter } from './routes/demo';
 import { userStudyRouter } from './routes/user-study/user-study';
 import { userStudyUserRouter } from './routes/user-study/user-study-user';
+import { Environment } from './environment';
 
-console.log('-------- EXPLORE BACKEND ---------');
+import * as dotenv from "dotenv";
+dotenv.config();
+
+console.log('-------- EXPLORE BACK END ---------');
+
+export const environment = new Environment();
 
 const app = express();
 const cors = require('cors');
@@ -93,7 +99,7 @@ app.use((req, res, next) => {
 
 // Data base connection
 const port = process.env.PORT || 3000;
-const mongodbURL = process.env.MONGO || 'mongodb://mongo:27017';
+const mongodbURL = process.env.MONGO || 'mongodb://localhost/explore';
 mongoose.connect(mongodbURL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
       console.log('connected to DB');

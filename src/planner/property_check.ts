@@ -5,8 +5,8 @@ import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
 import * as child from 'child_process';
 import { writeFileSync } from 'fs';
-import { propertyChekcer, resultsPath, uploadsPath } from '../settings';
 import { pythonShellCallSimple } from './python-call';
+import { environment } from '../app';
 
 export class PropertyCheck {
 
@@ -27,9 +27,9 @@ export class PropertyCheck {
         const problemFileName = path.basename(project.problemFile.path);
         const taskSchemaFileName = path.basename(project.taskSchema);
 
-        child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
-        child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
-        child.execSync(`cp ${path.join(resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'schema.json')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
+        child.execSync(`cp ${path.join(environment.resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'schema.json')}`);
 
         writeFileSync(path.join(this.runFolder, 'exp_setting.json'),
             JSON.stringify(this.generate_experiment_setting()),
@@ -58,7 +58,7 @@ export class PropertyCheck {
             mode: 'text',
             pythonPath: '/usr/bin/python3',
             pythonOptions: ['-u'],
-            scriptPath: propertyChekcer,
+            scriptPath: environment.propertyChekcer,
             args: addArgs
         };
 

@@ -5,10 +5,10 @@ import mongoose from 'mongoose';
 
 import { ExplanationRunModel, PlanRun, PlanRunModel, RunStatus, ExplanationRun } from '../../db_schema/run';
 import { ExplanationCall, PlanCall } from '../../planner/general_planner';
-import { experimentsRootPath } from '../../settings';
 import { USExplanationRunModel, USPlanRunModel } from '../../db_schema/user-study/user-study-store';
 import { auth, authUserStudy } from '../../middleware/auth';
 import { Project } from '../../db_schema/project';
+import { environment } from '../../app';
 
 
 export const plannerRouter = express.Router();
@@ -47,7 +47,7 @@ plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
             await planRun.populate('project').execPopulate();
             await planRun.populate('planProperties').execPopulate();
 
-            const planner = new PlanCall(experimentsRootPath, planRun);
+            const planner = new PlanCall(environment.experimentsRootPath, planRun);
             const planFound = await planner.executeRun();
             planner.tidyUp();
 
@@ -56,7 +56,7 @@ plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
                 // check which plan properties are satisfied by the plan
                 const planProperties: PlanProperty[] = await PlanPropertyModel
                     .find({ project: (planRun.project as Project)._id, isUsed: true });
-                const propertyChecker = new  PropertyCheck(experimentsRootPath, planProperties, planRun);
+                const propertyChecker = new  PropertyCheck(environment.experimentsRootPath, planProperties, planRun);
                 propNames = await propertyChecker.executeRun();
                 propertyChecker.tidyUp();
             }
@@ -113,7 +113,7 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
         }
         await explanationRun.save();
 
-        const planner = new ExplanationCall(experimentsRootPath, (planRun.project as Project), explanationRun);
+        const planner = new ExplanationCall(environment.experimentsRootPath, (planRun.project as Project), explanationRun);
         planner.executeRun().then( async () => {
 
             await ExplanationRunModel.updateOne({ _id: explanationRun._id},

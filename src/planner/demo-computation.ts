@@ -1,6 +1,4 @@
-import { demoGenerator, resultsPath, serverResultsPath } from './../settings';
 import { Demo } from './../db_schema/demo';
-import { uploadsPath } from '../settings';
 import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 
 import path from 'path';
@@ -8,6 +6,7 @@ import { writeFileSync } from 'fs';
 import * as child from 'child_process';
 import { ExperimentSetting } from './experiment_setting';
 import { PythonShell } from 'python-shell';
+import { environment } from '../app';
 
 const runningPythonShells = new Map<string, PythonShell>();
 
@@ -59,9 +58,9 @@ export class DemoComputation {
         const problemFileName = path.basename(this.demo.problemFile.path);
         const taskSchemaFileName = path.basename(this.demo.taskSchema);
 
-        child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
-        child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
-        child.execSync(`cp ${path.join(resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'task-schema.json')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
+        child.execSync(`cp ${path.join(environment.resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'task-schema.json')}`);
 
         writeFileSync(path.join(this.runFolder, 'plan-properties.json'),
             JSON.stringify(this.generate_experiment_setting()),
@@ -95,7 +94,7 @@ export class DemoComputation {
             mode: 'text',
             pythonPath: '/usr/bin/python3',
             pythonOptions: ['-u'],
-            scriptPath: demoGenerator,
+            scriptPath: environment.demoGenerator,
             args: addArgs,
         };
 
@@ -106,7 +105,7 @@ export class DemoComputation {
                         writeFileSync(resultsFolder, results.join('\n'), 'utf8');
 
                         this.copy_experiment_results();
-                        resolve(`${serverResultsPath}/demo_${this.demo._id}`);
+                        resolve(`${environment.serverResultsPath}/demo_${this.demo._id}`);
                     },
                     (err) => {
                         reject(err);
@@ -130,7 +129,7 @@ export class DemoComputation {
     }
 
     copy_experiment_results(): void {
-        child.execSync(`cp -r ${this.runFolder}/results/ ${resultsPath}/demo_${this.demo._id}`);
+        child.execSync(`cp -r ${this.runFolder}/results/ ${environment.resultsPath}/demo_${this.demo._id}`);
     }
 
     tidyUp(): void {

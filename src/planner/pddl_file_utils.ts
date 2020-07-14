@@ -3,12 +3,12 @@ import { readFile } from 'fs';
 import 'assert';
 import path from 'path';
 import * as child from 'child_process';
-import { resultsPath, uploadsPath } from '../settings';
+import { environment } from '../app';
 
 
 export async function getGoalFacts(pddFile: File): Promise<string[]> {
     console.assert(pddFile.type === 'problem');
-    const localPath = path.join(uploadsPath, path.basename(pddFile.path));
+    const localPath = path.join(environment.uploadsPath, path.basename(pddFile.path));
 
     const fileContentPromise = new Promise<string>((resolve, reject) => {
         readFile(localPath, (err, buffer) => {
@@ -56,15 +56,15 @@ function deleteFolder(folderPath: string): void {
 
 export function deleteResultFile(filepath: string): void {
     const filename = path.basename(filepath);
-    deleteFile(path.join(resultsPath, filename));
+    deleteFile(path.join(environment.resultsPath, filename));
 }
 
 export function deleteResultFolder(folderName: string): void {
-    deleteFile(path.join(resultsPath, folderName));
+    deleteFile(path.join(environment.resultsPath, folderName));
 }
 
 export function deleteUploadFile(filepath: string): void {
     const filename = path.basename(filepath);
-    deleteFile(path.join(uploadsPath, filename));
+    deleteFile(path.join(environment.uploadsPath, filename));
 }
 

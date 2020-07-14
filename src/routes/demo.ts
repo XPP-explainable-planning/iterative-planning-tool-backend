@@ -12,8 +12,9 @@ import { auth } from '../middleware/auth';
 
 import multer from 'multer';
 import path from 'path';
-import { experimentsRootPath } from '../settings';
 import { deleteResultFile, deleteUploadFile } from '../planner/pddl_file_utils';
+import { User } from '../db_schema/user';
+import { environment } from '../app';
 
 export const demoRouter = express.Router();
 
@@ -103,7 +104,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         const planProperties = await PlanPropertyModel.find({ project: demo._id});
 
         DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
-        const demoGen = new DemoComputation(experimentsRootPath, demo, planProperties);
+        const demoGen = new DemoComputation(environment.experimentsRootPath, demo, planProperties);
         demoGen.executeRun().then(
             async (demoFolder) => {
                 const updatedDemoDoc = await DemoModel.updateOne({ _id: demo?._id},
@@ -192,7 +193,7 @@ demoRouter.get('', authForward, async (req: any, res) => {
         const demos = allDemos.filter(d => {
             const p = d.settings.public;
             d.settings = d.settings._id;
-            return p || (req.user && d.user === req.user._id.toHexString());
+            return p || (req.user && (d.user as any)._id.toHexString() === req.user._id.toHexString());
         });
         if (!demos) { return res.status(404).send({ message: 'No demos found' }); }
 

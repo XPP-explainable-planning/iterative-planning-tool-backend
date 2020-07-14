@@ -7,9 +7,9 @@ import 'fs';
 import { ExplanationRun, PlanRun } from '../db_schema/run';
 import { PlanProperty } from '../db_schema/plan-properties/plan_property';
 import { ExperimentSetting } from './experiment_setting';
-import { ltlkit, planner, resultsPath, serverResultsPath, spot, uploadsPath } from '../settings';
 import { readFileSync, writeFileSync } from 'fs';
 import { CallResult, pythonShellCallFD, pythonShellCallSimple } from './python-call';
+import { environment } from '../app';
 
 
 export class TranslatorCall{
@@ -30,10 +30,10 @@ export class TranslatorCall{
         const domainFileName = path.basename(this.project.domainFile.path);
         const problemFileName = path.basename(this.project.problemFile.path);
 
-        child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
-        child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
 
-        child.execSync(`cp -r ${planner} ${this.runFolder}/fast-downward`);
+        child.execSync(`cp -r ${environment.planner} ${this.runFolder}/fast-downward`);
     }
 
     async executeRun(): Promise<void> {
@@ -47,20 +47,20 @@ export class TranslatorCall{
             pythonOptions: ['-u'],
             scriptPath: `${this.runFolder}/fast-downward/`,
             args: addArgs,
-            env: { SPOT_BIN_PATH: spot, LTL2HAO_PATH: ltlkit},
+            env: { SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltlkit},
         };
 
         const results = await pythonShellCallSimple('run_FD.py', options);
-        writeFileSync(path.join(resultsPath, `out_${this.project._id}.log`), results.join('\n'), 'utf8');
+        writeFileSync(path.join(environment.resultsPath, `out_${this.project._id}.log`), results.join('\n'), 'utf8');
 
         this.copy_experiment_results();
     }
 
     copy_experiment_results(): void {
         child.spawnSync('cp', [path.join(this.runFolder, 'fdr.json'),
-            path.join(resultsPath, `task_schema_${this.project._id}.json`)]);
+            path.join(environment.resultsPath, `task_schema_${this.project._id}.json`)]);
 
-        this.project.taskSchema = serverResultsPath + `/task_schema_${this.project._id}.json`;
+        this.project.taskSchema = environment.serverResultsPath + `/task_schema_${this.project._id}.json`;
     }
 
     tidyUp(): void {
@@ -93,15 +93,17 @@ export class PlannerCall {
         child.execSync(`mkdir -p ${this.runFolder}`);
         const domainFileName = path.basename(this.domainFile);
         const problemFileName = path.basename(this.problemFile);
+        console.log(domainFileName);
+        console.log(path.join(environment.uploadsPath, domainFileName));
 
-        child.execSync(`cp ${path.join(uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
-        child.execSync(`cp ${path.join(uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
+        child.execSync(`cp ${path.join(environment.uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
 
         writeFileSync(path.join(this.runFolder, 'exp_setting.json'),
             JSON.stringify(this.generate_experiment_setting()),
             'utf8');
 
-        child.execSync(`cp -r ${planner} ${this.runFolder}/fast-downward`);
+        child.execSync(`cp -r ${environment.planner} ${this.runFolder}/fast-downward`);
     }
 
     generate_experiment_setting(): ExperimentSetting {
@@ -123,13 +125,13 @@ export class PlannerCall {
             pythonOptions: ['-u'],
             scriptPath: `${this.runFolder}/fast-downward/`,
             args: addArgs,
-            env: { SPOT_BIN_PATH: spot, LTL2HAO_PATH: ltlkit},
+            env: { SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltlkit},
         };
 
         const plannerResults : CallResult = await pythonShellCallFD(options);
 
         if (plannerResults.planFound) {
-            writeFileSync(path.join(resultsPath, `out_${this.runId}.log`), plannerResults.log.join('\n'), 'utf8');
+            writeFileSync(path.join(environment.resultsPath, `out_${this.runId}.log`), plannerResults.log.join('\n'), 'utf8');
             this.copy_experiment_results();
         }
 
@@ -159,7 +161,7 @@ export class PlanCall extends PlannerCall{
         const buffer: Buffer = readFileSync(path.join(this.runFolder, 'sas_plan'));
         this.run.planString = buffer.toString('utf8');
 
-        this.run.log = serverResultsPath + `/out_${this.runId}.log`;
+        this.run.log = environment.serverResultsPath + `/out_${this.runId}.log`;
     }
 }
 
@@ -178,7 +180,7 @@ export class ExplanationCall extends PlannerCall{
         const buffer: Buffer = readFileSync(path.join(this.runFolder, 'mugs.json'));
         this.run.result = buffer.toString('utf8');
 
-        this.run.log = serverResultsPath + `/out_${this.runId}.log`;
+        this.run.log = environment.serverResultsPath + `/out_${this.runId}.log`;
     }
 }
 
