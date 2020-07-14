@@ -93,7 +93,8 @@ app.use((req, res, next) => {
 
 // Data base connection
 const port = process.env.PORT || 3000;
-mongoose.connect('mongodb://localhost/explore', { useNewUrlParser: true, useUnifiedTopology: true })
+const mongodbURL = process.env.MONGO || 'mongodb://mongo:27017';
+mongoose.connect(mongodbURL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
       console.log('connected to DB');
       // mongoose.connection.db.dropDatabase();
