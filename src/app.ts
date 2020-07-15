@@ -60,9 +60,9 @@ app.use('/api/demo', demoRouter);
 app.use('/api/settings', executionSettingsRouter);
 app.use('/api/plan-property', planPropertyRouter);
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/results', express.static(path.join(__dirname, 'results')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/uploads', express.static(path.join(__dirname, 'data/uploads')));
+app.use('/results', express.static(path.join(__dirname, 'data/results')));
+app.use('/images', express.static(path.join(__dirname, 'data/images')));
 
 app.use('/api/planner', plannerRouter);
 
