@@ -59,7 +59,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 
         let imageFilePath = '';
         if (req.file) {
-            imageFilePath = imgPort + '/uploads/' + req.file.filename;
+            imageFilePath = '/uploads/' + req.file.filename;
         }
 
         // Copy Project Data:
