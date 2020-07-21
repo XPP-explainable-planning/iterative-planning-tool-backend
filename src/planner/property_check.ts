@@ -58,7 +58,7 @@ export class PropertyCheck {
             mode: 'text',
             pythonPath: '/usr/bin/python3',
             pythonOptions: ['-u'],
-            scriptPath: environment.propertyChekcer,
+            scriptPath: environment.propertyChecker,
             args: addArgs
         };
 

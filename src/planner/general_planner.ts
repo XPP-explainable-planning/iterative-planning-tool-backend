@@ -47,7 +47,7 @@ export class TranslatorCall{
             pythonOptions: ['-u'],
             scriptPath: `${this.runFolder}/fast-downward/`,
             args: addArgs,
-            env: { SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltlkit},
+            env: { SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltltkit},
         };
 
         const results = await pythonShellCallSimple('run_FD.py', options);
@@ -125,7 +125,7 @@ export class PlannerCall {
             pythonOptions: ['-u'],
             scriptPath: `${this.runFolder}/fast-downward/`,
             args: addArgs,
-            env: { SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltlkit},
+            env: { SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltltkit},
         };
 
         const plannerResults : CallResult = await pythonShellCallFD(options);

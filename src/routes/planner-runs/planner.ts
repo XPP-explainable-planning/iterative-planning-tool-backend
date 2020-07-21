@@ -113,8 +113,12 @@ plannerRouter.post('/mugs/:id', auth, async (req, res) => {
         }
         await explanationRun.save();
 
+        await explanationRun.populate('planProperties').execPopulate();
+
         const planner = new ExplanationCall(environment.experimentsRootPath, (planRun.project as Project), explanationRun);
         planner.executeRun().then( async () => {
+
+            planner.tidyUp();
 
             await ExplanationRunModel.updateOne({ _id: explanationRun._id},
                 { $set: { result: explanationRun.result, log: explanationRun.log, status: RunStatus.finished} });
