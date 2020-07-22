@@ -11,16 +11,12 @@ import { environment } from '../app';
 const runningPythonShells = new Map<string, PythonShell>();
 
 export function cancelDemoComputation(demoId: string): Promise<boolean> {
-    console.log('Cancel demo computation run!: ' + demoId);
     return new Promise((resolve, reject) => {
         if (!runningPythonShells.has(demoId)) {
-            console.log('Cancel demo computation run: run does not exist!');
             resolve(false);
             return;
         }
-        console.log('Cancel demo computation run: run shell found: ' + runningPythonShells.size);
         runningPythonShells.get(demoId)?.end((err, exitCode, exitSignal) => {
-            console.log('ExitCode: ' + exitCode);
             if (err) {
                 reject(true);
                 return;
@@ -69,7 +65,6 @@ export class DemoComputation {
     }
 
     generate_experiment_setting(): ExperimentSetting {
-        console.log('#PlanProperties: ' + this.planProperties.length);
         return {
             hard_goals: this.planProperties.filter(p => p.globalHardGoal).map(p => p.name),
             plan_properties: this.planProperties,
@@ -87,8 +82,6 @@ export class DemoComputation {
             `${this.runFolder}/plan-properties.json`,
             `${this.runFolder}/results`
         ];
-
-        console.log(addArgs);
 
         const options = {
             mode: 'text',

@@ -22,8 +22,6 @@ const imgPort = 'http://localhost:3000';
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        console.log('Storage file:');
-        console.log(file);
         cb(null, path.join(path.resolve(__dirname, '..'), 'data/uploads'));
     },
     filename: (req, file, cb) => {
@@ -32,8 +30,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req: any, file: any, cb: (arg0: null, arg1: boolean) => void) => {
-    console.log('File Filter');
-    console.log(file);
     cb(null, true);
     // if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
     //     cb(null, true);
@@ -51,7 +47,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 
     let demo: Demo | null = null;
     try {
-        console.log('-------------------- >  CREATE Demo');
+        // console.log('-------------------- >  CREATE Demo');
 
         const settingsId = await (ExecutionSettingsModel as any).createDemoDefaultSettings();
         const project = await ProjectModel.findById(req.body.projectId);
@@ -144,8 +140,6 @@ demoRouter.put('/', auth, async (req, res) => {
         demo.taskInfo = req.body.taskInfo;
 
         await demo.save();
-
-        console.log(demo.taskInfo);
 
         res.send({
             status: true,

@@ -32,7 +32,6 @@ async function computeAndStoreSchema(project: Project): Promise<Project | null> 
 
 projectRouter.post('/', async (req: any, res) => {
     try {
-        console.log('POST Project');
 
         const settingsId = await (ExecutionSettingsModel as any).createProjectDefaultSettings();
 

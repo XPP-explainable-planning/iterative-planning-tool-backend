@@ -7,7 +7,6 @@ export const userStudyUserRouter = express.Router();
 userStudyUserRouter.post('/', async (req, res) => {
 
     try {
-        console.log('register new user study user: ' + req.body.prolificId);
         const user = new USUserModel(req.body);
         await user.save();
         const token = await user.generateAuthToken();

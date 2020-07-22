@@ -23,12 +23,10 @@ userRouter.post('/', async (req, res) => {
 });
 
 userRouter.post('/login', authForward, async(req: any, res: Response) => {
-    console.log('Login ...');
     try {
         if (req.user) {
             res.send({ user: req.user, token: req.token });
         }
-        console.log('Login');
         const username = req.body.name;
         const password = req.body.password;
         const user = await (UserModel as any).findByCredentials(username, password);
@@ -51,7 +49,6 @@ userRouter.get('', auth, async(req: any, res) => {
 });
 
 userRouter.post('/logout', auth, async (req: any, res) => {
-    console.log('Logout ...');
     try {
         req.user.tokens = req.user.tokens.filter((token: {token: string}) => {
             return token.token !== req.token;

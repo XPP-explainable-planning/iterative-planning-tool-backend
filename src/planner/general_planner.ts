@@ -93,8 +93,6 @@ export class PlannerCall {
         child.execSync(`mkdir -p ${this.runFolder}`);
         const domainFileName = path.basename(this.domainFile);
         const problemFileName = path.basename(this.problemFile);
-        console.log(domainFileName);
-        console.log(path.join(environment.uploadsPath, domainFileName));
 
         child.execSync(`cp ${path.join(environment.uploadsPath, domainFileName)} ${path.join(this.runFolder, 'domain.pddl')}`);
         child.execSync(`cp ${path.join(environment.uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);

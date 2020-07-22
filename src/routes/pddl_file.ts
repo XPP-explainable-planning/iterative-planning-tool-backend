@@ -12,8 +12,6 @@ const imgPort = 'http://localhost:3000';
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        console.log('Storage file:');
-        console.log(file);
         cb(null, path.join(path.resolve(__dirname, '..'), 'data/uploads'));
     },
     filename: (req, file, cb) => {
@@ -77,7 +75,6 @@ pddlFileRouter.get('/type/:type', async (req, res) => {
 pddlFileRouter.get('/:id', async (req, res) => {
     try {
         const id = mongoose.Types.ObjectId(req.params.id);
-        console.log('ID: ' + id);
         const pddlFile = await FileModel.findOne({ _id: id });
         if (!pddlFile) { return res.status(404).send({ message: 'No PDDL file found.' }); }
         res.send({

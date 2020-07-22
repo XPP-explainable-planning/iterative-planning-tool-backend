@@ -25,7 +25,7 @@ planPropertyRouter.post('/', auth, async (req, res) => {
             return res.status(403).send('Plan-property could not be found.');
         }
         const data = await planProperty.save();
-        console.log(data);
+
         res.send({
             status: true,
             message: 'Plan Property is stored.',
@@ -69,7 +69,7 @@ planPropertyRouter.get('/', async (req, res) => {
     const projectId =  mongoose.Types.ObjectId(req.query.projectId);
     const properties = await  PlanPropertyModel.find({ project: projectId.toHexString()});
 
-    console.log('GET properties from project: ' + req.query.projectId + ': #' + properties.length);
+    // console.log('GET properties from project: ' + req.query.projectId + ': #' + properties.length);
     if (!properties) { return res.status(404).send({ message: 'No plan-property found.' }); }
 
     res.send({
