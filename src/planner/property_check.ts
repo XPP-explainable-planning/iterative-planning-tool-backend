@@ -59,7 +59,8 @@ export class PropertyCheck {
             pythonPath: '/usr/bin/python3',
             pythonOptions: ['-u'],
             scriptPath: environment.propertyChecker,
-            args: addArgs
+            args: addArgs,
+            env: { VAL: environment.val},
         };
 
         return await pythonShellCallSimple('main.py', options);

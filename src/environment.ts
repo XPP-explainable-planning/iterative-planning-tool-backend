@@ -12,6 +12,7 @@ export class Environment {
 
     public ltltkit = process.env.LTLFKIT ? process.env.LTLFKIT : '';
     public spot = process.env.SPOT  ? process.env.SPOT : '';
+    public val = process.env.VAL  ? process.env.VAL : '';
 
     constructor() { }
 

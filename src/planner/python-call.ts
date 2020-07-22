@@ -12,6 +12,7 @@ export function pythonShellCallSimple(scriptPath: string, options: any): Promise
         // @ts-ignore
         PythonShell.run(scriptPath, options,  (err: any, results: any) => {
             if (err) {
+                console.log(err);
                 reject(err);
             }
             else {
@@ -30,6 +31,7 @@ export function pythonShellCallFD(options: any): Promise<CallResult> {
                     resolve({ planFound: false, log: []});
                     return;
                 }
+                console.log(err);
                 reject(err);
             }
             else {
