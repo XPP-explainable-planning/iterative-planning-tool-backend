@@ -188,7 +188,6 @@ demoRouter.post('/cancel/:id', auth, async (req, res) => {
 demoRouter.get('', authForward, async (req: any, res) => {
 
     try {
-        console.log(req.user._id.toHexString());
         const allDemos: Demo[] = await DemoModel.find().populate('settings');
         const demos = allDemos.filter(d => {
             const p = d.settings.public;

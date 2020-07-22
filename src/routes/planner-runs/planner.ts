@@ -14,6 +14,7 @@ import { environment } from '../../app';
 export const plannerRouter = express.Router();
 
 plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
+
     const saveRun: boolean = req.query.save ? JSON.parse(req.query.save) : false;
 
     try {

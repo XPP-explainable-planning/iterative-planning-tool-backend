@@ -69,7 +69,7 @@ export const authForward = async(req: any, res: Response, next: NextFunction) =>
 
 export const authUserStudy = async(req: any, res: Response, next: NextFunction) => {
     if (! req.header('Authorization')) {
-        res.status(401).send({ error: 'Not authorized to access this resource' });
+        next();
         return;
     }
 
