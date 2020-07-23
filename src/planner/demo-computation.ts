@@ -91,7 +91,8 @@ export class DemoComputation {
             pythonOptions: ['-u'],
             scriptPath: environment.demoGenerator,
             args: addArgs,
-            env: { PLANNER: `${this.runFolder}/fast-downward/`, PROPERTYCHECKER: environment.propertyChecker, PATH: environment.path},
+            env: { PLANNER: `${this.runFolder}/fast-downward/`, PROPERTYCHECKER: environment.propertyChecker, PATH: environment.path,
+                SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltltkit},
         };
 
         return new Promise<string>(
