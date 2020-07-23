@@ -89,6 +89,7 @@ export class DemoComputation {
             pythonOptions: ['-u'],
             scriptPath: environment.demoGenerator,
             args: addArgs,
+            env: { PLANNER: environment.planner, PROPERTYCHECKER: environment.propertyChecker},
         };
 
         return new Promise<string>(

@@ -47,7 +47,6 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
 
     let demo: Demo | null = null;
     try {
-        // console.log('-------------------- >  CREATE Demo');
 
         const settingsId = await (ExecutionSettingsModel as any).createDemoDefaultSettings();
         const project = await ProjectModel.findById(req.body.projectId);
@@ -108,6 +107,7 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
                 demoGen.tidyUp();
             },
             async (err) => {
+                console.log(err);
                 await DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
                 demoGen.tidyUp();
             }
