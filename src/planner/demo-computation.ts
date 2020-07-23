@@ -58,6 +58,8 @@ export class DemoComputation {
         child.execSync(`cp ${path.join(environment.uploadsPath, problemFileName)} ${path.join(this.runFolder, 'problem.pddl')}`);
         child.execSync(`cp ${path.join(environment.resultsPath, taskSchemaFileName)} ${path.join(this.runFolder, 'task-schema.json')}`);
 
+        child.execSync(`cp -r ${environment.planner} ${this.runFolder}/fast-downward`);
+
         writeFileSync(path.join(this.runFolder, 'plan-properties.json'),
             JSON.stringify(this.generate_experiment_setting()),
             'utf8');
@@ -89,7 +91,7 @@ export class DemoComputation {
             pythonOptions: ['-u'],
             scriptPath: environment.demoGenerator,
             args: addArgs,
-            env: { PLANNER: environment.planner, PROPERTYCHECKER: environment.propertyChecker},
+            env: { PLANNER: `${this.runFolder}/fast-downward/`, PROPERTYCHECKER: environment.propertyChecker, PATH: environment.path},
         };
 
         return new Promise<string>(

@@ -30,13 +30,20 @@ userRouter.post('/login', authForward, async(req: any, res: Response) => {
         const username = req.body.name;
         const password = req.body.password;
         const user = await (UserModel as any).findByCredentials(username, password);
-
         if (!user) {
-            return res.status(401).send({ error: 'Login failed! Check authentication credentials'});
+            return res.send({
+                successful: false,
+                user: null,
+                token: null
+            })
+            // return res.status(401).send({ error: 'Login failed! Check authentication credentials'});
         }
 
         const token = await user.generateAuthToken();
-        res.send({ user, token });
+        res.send({
+            successful: true,
+            user,
+            token });
     } catch (error) {
         res.status(400).send(error);
     }
@@ -48,12 +55,15 @@ userRouter.get('', auth, async(req: any, res) => {
     res.send({ data: req.user });
 });
 
-userRouter.post('/logout', auth, async (req: any, res) => {
+userRouter.post('/logout', authForward, async (req: any, res) => {
     try {
-        req.user.tokens = req.user.tokens.filter((token: {token: string}) => {
-            return token.token !== req.token;
-        });
-        await req.user.save();
+        if (req.user) {
+            req.user.tokens = req.user.tokens.filter((token: {token: string}) => {
+                return token.token !== req.token;
+            });
+            await req.user.save();
+        }
+
         res.send();
     } catch (error) {
         res.status(500).send(error);

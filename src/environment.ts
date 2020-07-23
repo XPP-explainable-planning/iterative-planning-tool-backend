@@ -14,6 +14,8 @@ export class Environment {
     public spot = process.env.SPOT  ? process.env.SPOT : '';
     public val = process.env.VAL  ? process.env.VAL : '';
 
+    public path = process.env.PATH  ? process.env.PATH : '';
+
     constructor() { }
 
 }
