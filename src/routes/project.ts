@@ -74,13 +74,16 @@ projectRouter.put('/:id', async (req, res) => {
     try {
         const refId = mongoose.Types.ObjectId(req.params.id);
 
-        await ProjectModel.replaceOne({_id: refId}, req.body);
-
-        const project: Project | null = await ProjectModel.findOne({_id: refId}).lean();
+        const project: Project | null = await ProjectModel.findOne({_id: refId});
 
         if (!project) {
             return res.status(403).send('update project failed');
         }
+
+        project.name = req.body.name;
+        project.description = req.body.description;
+
+        await project.save();
 
         res.send({
             status: true,

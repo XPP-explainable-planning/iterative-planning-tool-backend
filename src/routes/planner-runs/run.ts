@@ -82,7 +82,7 @@ runRouter.delete('/plan-run/:id', async (req, res) => {
 });
 
 
-runRouter.get('/explanation-run/:id', async (req, res) => {
+runRouter.get('/explanation/:id', async (req, res) => {
     const id =  mongoose.Types.ObjectId(req.params.id);
     const run = await ExplanationRunModel.findOne({ _id: id}).populate('planProperties');
     if (!run) { return res.status(404).send({ message: 'no run found' }); }
@@ -91,7 +91,7 @@ runRouter.get('/explanation-run/:id', async (req, res) => {
     });
 });
 
-runRouter.delete('/explanation-run/:id', async (req, res) => {
+runRouter.delete('/explanation/:id', async (req, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
 
     ExplanationRunModel.findOneAndDelete({ _id: id }, async (err, expRun) => {

@@ -18,6 +18,19 @@ userStudyUserRouter.post('/', async (req, res) => {
 });
 
 
+userStudyUserRouter.post('/timelog', authUserStudy,  async (req: any, res) => {
+
+    try {
+        const timeLog = req.body.timeLog;
+        req.userStudyUser.timeLog = timeLog;
+        await req.userStudyUser.save();
+        res.send();
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+
 userStudyUserRouter.post('/logout', authUserStudy,  async (req: any, res) => {
 
     try {

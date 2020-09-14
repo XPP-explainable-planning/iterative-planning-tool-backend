@@ -98,7 +98,7 @@ app.use((req, res, next) => {
 
 
 // Data base connection
-const port = process.env.PORT || 3000;
+const port = environment.port || 3000;
 const mongodbURL = process.env.MONGO || 'mongodb://localhost/explore';
 mongoose.connect(mongodbURL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {

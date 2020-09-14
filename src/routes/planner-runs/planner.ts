@@ -41,6 +41,7 @@ plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
                 planRun: planRun._id,
             });
             await usPlanRun.save();
+            console.log(usPlanRun);
         }
 
         try {

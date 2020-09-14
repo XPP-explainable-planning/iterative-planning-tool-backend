@@ -2,6 +2,7 @@ import { UserModel, User } from './../db_schema/user';
 import * as jwt from 'jsonwebtoken';
 import { USUserModel, USUser } from '../db_schema/user-study/user-study-user';
 import { Request, Response, NextFunction } from 'express';
+import { environment } from '../app';
 
 
 // export interface AuthRequest extends Request {
@@ -24,7 +25,7 @@ export const auth = async(req: any, res: Response, next: NextFunction) => {
         res.status(401).send({ error: 'Not authorized to access this resource' });
         return;
     }
-    const data: User = jwt.verify(token, process.env.JWT_KEY || '0') as User;
+    const data: User = jwt.verify(token, environment.jwtKey) as User;
     try {
         const user = await UserModel.findOne({ _id: data._id, 'tokens.token': token });
         if (!user) {
@@ -51,7 +52,7 @@ export const authForward = async(req: any, res: Response, next: NextFunction) =>
         res.status(401).send({ error: 'Not authorized to access this resource' });
         return;
     }
-    const data: User = jwt.verify(token, process.env.JWT_KEY || '0') as User;
+    const data: User = jwt.verify(token, environment.jwtKey) as User;
     try {
         const user = await UserModel.findOne({ _id: data._id, 'tokens.token': token });
         if (!user) {
@@ -78,7 +79,7 @@ export const authUserStudy = async(req: any, res: Response, next: NextFunction) 
         res.status(401).send({ error: 'Not authorized to access this resource' });
         return;
     }
-    const data: USUser = jwt.verify(token, process.env.JWT_KEY || '0') as USUser;
+    const data: USUser = jwt.verify(token, environment.jwtKey) as USUser;
     try {
         const user = await USUserModel.findOne({ _id: data._id, token });
         if (!user) {

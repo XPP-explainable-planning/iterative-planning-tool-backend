@@ -16,6 +16,9 @@ export class Environment {
 
     public path = process.env.PATH  ? process.env.PATH : '';
 
+    public port = process.env.PORT  ? process.env.PORT : '';
+    public jwtKey = process.env.JWT_KEY ? process.env.JWT_KEY : '';
+
     constructor() { }
 
 }
