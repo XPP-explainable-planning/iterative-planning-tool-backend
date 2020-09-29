@@ -172,12 +172,14 @@ plannerRouter.post('/mugs-save/:id', authUserStudy, async (req: any, res) => {
         }
 
         await explanationRun.save();
+        await PlanRunModel.updateOne({ _id: planRunId}, { $set: { explanationRuns: planRun.explanationRuns.concat([explanationRun])}});
 
         const usExpRun = new USExplanationRunModel({
             user: req.userStudyUser._id,
-            expRun: explanationRun._id,
+            explanationRun: explanationRun._id,
         });
         await usExpRun.save();
+
 
         res.send({
             status: true,

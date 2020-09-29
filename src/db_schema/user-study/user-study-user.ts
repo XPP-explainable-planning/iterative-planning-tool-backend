@@ -3,7 +3,8 @@ import * as jwt from 'jsonwebtoken';
 
 export interface USUser extends Document{
     prolificId: string;
-    userStudyId: string;
+    userStudyExtId: string;
+    userStudy: string;
     token?: string;
     finished?: string;
     timeLog?: string;
@@ -17,10 +18,14 @@ const USUserSchema =  new Schema<USUser>({
         required: true,
         trim: true
     },
-    userStudyId: {
+    userStudyExtId: {
         type: String,
         required: true,
         trim: true
+    },
+    userStudy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user-study'
     },
     token: {
         type: String,

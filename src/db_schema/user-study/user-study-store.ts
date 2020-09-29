@@ -5,12 +5,14 @@ export interface  USExplanationRun extends Document{
     _id: string;
     user: string;
     explanationRun: string;
+    createdAt?: Date;
 }
 
 export interface  USPlanRun extends Document{
     _id: string;
     user: string;
     planRun: string;
+    createdAt?: Date;
 }
 
 const USExplanationRunSchema = new Schema({

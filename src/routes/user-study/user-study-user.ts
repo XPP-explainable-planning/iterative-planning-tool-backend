@@ -22,9 +22,9 @@ userStudyUserRouter.post('/timelog', authUserStudy,  async (req: any, res) => {
 
     try {
         const timeLog = req.body.timeLog;
-        req.userStudyUser.timeLog = timeLog;
-        await req.userStudyUser.save();
-        res.send();
+        const userStudyUser = req.userStudyUser;
+        userStudyUser.timeLog = timeLog;
+        userStudyUser.save().then(() => res.send(), (err: any) => console.log(err));
     } catch (error) {
         res.status(500).send(error);
     }
@@ -35,6 +35,7 @@ userStudyUserRouter.post('/logout', authUserStudy,  async (req: any, res) => {
 
     try {
         req.userStudyUser.token = null;
+        req.userStudyUser.finished = true;
         await req.userStudyUser.save();
         res.send();
     } catch (error) {
