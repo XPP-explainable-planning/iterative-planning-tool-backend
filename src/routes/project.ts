@@ -1,7 +1,7 @@
 import { ExecutionSettingsModel } from './../db_schema/execution_settings';
 import { ExplanationRunModel, PlanRun, PlanRunModel } from './../db_schema/run';
 import { PlanPropertyModel } from '../db_schema/plan-properties/plan_property';
-import { Project } from './../db_schema/project';
+import { BaseProjectModel, Project } from './../db_schema/project';
 import express from 'express';
 import mongoose from 'mongoose';
 
@@ -73,15 +73,14 @@ projectRouter.post('/', async (req: any, res) => {
 projectRouter.put('/:id', async (req, res) => {
     try {
         const refId = mongoose.Types.ObjectId(req.params.id);
-
-        const project: Project | null = await ProjectModel.findOne({_id: refId});
-
+        const project: Project | null = await BaseProjectModel.findOne({ _id: refId});
         if (!project) {
             return res.status(403).send('update project failed');
         }
 
         project.name = req.body.name;
         project.description = req.body.description;
+        project.animationSettings = req.body.animationSettings;
 
         await project.save();
 
@@ -158,9 +157,9 @@ projectRouter.delete('/:id', async (req, res) => {
     const project: Project = projectDoc?.toJSON() as Project;
 
     // delete corresponding files
-    deleteUploadFile(project.domainFile.path);
-    deleteUploadFile(project.problemFile.path);
-    deleteUploadFile(project.domainSpecification.path);
+    //deleteUploadFile(project.domainFile.path);
+    //deleteUploadFile(project.problemFile.path);
+    //deleteUploadFile(project.domainSpecification.path);
 
     // Delete runs
     const planRunsDocs = await PlanRunModel.find({ projetc: id});
