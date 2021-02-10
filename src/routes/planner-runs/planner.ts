@@ -41,13 +41,15 @@ plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
                 planRun: planRun._id,
             });
             await usPlanRun.save();
-            console.log(usPlanRun);
+            // console.log(usPlanRun);
         }
 
         try {
             // load project and plan-properties and compute plan
             await planRun.populate('project').execPopulate();
             await planRun.populate('planProperties').execPopulate();
+            // console.log('Hard Goals:');
+            // console.log(planRun.hardGoals);
 
             const planner = new PlanCall(environment.experimentsRootPath, planRun);
             const planFound = await planner.executeRun();
@@ -60,6 +62,8 @@ plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
                     .find({ project: (planRun.project as Project)._id, isUsed: true });
                 const propertyChecker = new  PropertyCheck(environment.experimentsRootPath, planProperties, planRun);
                 propNames = await propertyChecker.executeRun();
+                // console.log('Sat properties:');
+                // console.log(propNames);
                 propertyChecker.tidyUp();
             }
 

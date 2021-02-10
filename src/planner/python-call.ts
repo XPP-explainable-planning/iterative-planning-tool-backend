@@ -7,7 +7,6 @@ export interface CallResult{
 
 
 export function pythonShellCallSimple(scriptPath: string, options: any): Promise<string[]> {
-
     return new Promise((resolve, reject) => {
         // @ts-ignore
         PythonShell.run(scriptPath, options,  (err: any, results: any) => {

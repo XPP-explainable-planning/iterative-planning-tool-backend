@@ -147,7 +147,7 @@ export class PlannerCall {
 
 
 
-const plannerSettingOptPlan = ['--search', 'astar(lmcut())'];
+const plannerSettingOptPlan = ['--search', 'astar(hmax())'];
 export class PlanCall extends PlannerCall{
 
     constructor(root: string, private run: PlanRun) {
