@@ -1,9 +1,16 @@
-import { UserStudyModel, UserStudy } from '../../db_schema/user-study/user-study';
+import { UserStudyModel, UserStudy, UserStudyStepType } from '../../db_schema/user-study/user-study';
 import express from 'express';
 import mongoose from 'mongoose';
 import { auth, authForward, authUserStudy } from '../../middleware/auth';
 import { USUser, USUserModel } from '../../db_schema/user-study/user-study-user';
-import { USPlanRun, USExplanationRun, USExplanationRunModel, USPlanRunModel } from '../../db_schema/user-study/user-study-store';
+import {
+    USPlanRun,
+    USExplanationRun,
+    USExplanationRunModel,
+    USPlanRunModel,
+    UserStudyData, UserStudyDemoData
+} from '../../db_schema/user-study/user-study-store';
+import { ExplanationRun, PlanRun } from '../../db_schema/run';
 
 export const userStudyRouter = express.Router();
 
@@ -111,23 +118,44 @@ userStudyRouter.get('/:id/data', auth, async (req, res) => {
             return res.status(403).send('update user study failed');
         }
 
+        const demoIds: string[] = [];
+        for (const userStudyStep of userStudy.steps) {
+            if (userStudyStep.type === UserStudyStepType.demo) {
+                demoIds.push(userStudyStep.content);
+            }
+        }
+
         const users: USUser[] = await  USUserModel.find({ userStudy: userStudy._id});
 
-        const data = [];
+        const data: UserStudyData[] = [];
         for (const user of users) {
+            const demosData: { demoId: string, data: UserStudyDemoData}[] = [];
             const usPlanRuns: USPlanRun[] = await USPlanRunModel.find({ user: user._id}).populate('planRun');
-            const planRunData = [];
-            for (const run of usPlanRuns) {
-                planRunData.push({ timestamp: run.createdAt, run: run.planRun});
-            }
             const usExpRuns: USExplanationRun[] = await USExplanationRunModel.find({ user: user._id}).populate('explanationRun');
-            const explanationRunData = [];
-            for (const run of usExpRuns) {
-                explanationRunData.push({ timestamp: run.createdAt, run: run.explanationRun});
-            }
 
-            data.push({ user, planRuns: planRunData, expRuns: explanationRunData});
+            for (const demoId of demoIds) {
+                const planRunData = [];
+                const planRunIds: string[] = [];
+                for (const run of usPlanRuns) {
+                    if (run.planRun.project.toString() === demoId) {
+                        planRunData.push({ timeStamp: run.createdAt, run: run.planRun});
+                        planRunIds.push(run.planRun._id.toString());
+                    }
+                }
+
+                const explanationRunData = [];
+                for (const run of usExpRuns) {
+                    if (planRunIds.includes((run.explanationRun.planRun as PlanRun)._id.toString())) {
+                        explanationRunData.push({ timeStamp: run.createdAt, run: run.explanationRun});
+                    }
+                }
+                demosData.push({ demoId, data: { planRuns: planRunData, expRuns: explanationRunData}});
+            }
+            // console.log(demosData);
+            data.push({ user, demosData});
         }
+
+        // console.log(data);
 
         res.send({
             status: true,

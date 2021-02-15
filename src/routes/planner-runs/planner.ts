@@ -53,6 +53,7 @@ plannerRouter.post('/plan', authUserStudy, async (req: any, res) => {
 
             const planner = new PlanCall(environment.experimentsRootPath, planRun);
             const planFound = await planner.executeRun();
+            // console.log('Plan Found: ' + planFound);
             planner.tidyUp();
 
             let propNames: string[] = [];

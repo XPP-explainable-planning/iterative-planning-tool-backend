@@ -26,7 +26,7 @@ export interface  ExplanationRun extends Document{
     softGoals: string[];
     log: string;
     result: string;
-    planRun: string;
+    planRun: PlanRun | string;
 }
 
 export interface  PlanRun extends Document{
