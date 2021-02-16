@@ -5,6 +5,7 @@ export class Environment {
     public planner = process.env.PLANNER ? process.env.PLANNER : '';
     public propertyChecker = process.env.PROPERTYCHECKER ? process.env.PROPERTYCHECKER : '';
     public demoGenerator = process.env.DEMOGENERATOR ? process.env.DEMOGENERATOR : '';
+    public maxUtility = process.env.MAXUTILITY ? process.env.MAXUTILITY : '';
 
     public uploadsPath =  process.env.UPLOADPATH ? process.env.UPLOADPATH : '';
     public resultsPath = process.env.RESULTPATH ? process.env.RESULTPATH : '';

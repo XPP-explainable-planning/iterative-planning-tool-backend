@@ -98,12 +98,18 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
     try {
         const planProperties = await PlanPropertyModel.find({ project: demo._id});
 
-        DemoModel.updateOne({ _id: demo._id}, { $set: { status: RunStatus.running } });
+        demo.status = RunStatus.running;
+        await demo.save();
+
         const demoGen = new DemoComputation(environment.experimentsRootPath, demo, planProperties);
+
         demoGen.executeRun().then(
-            async (demoFolder) => {
-                const updatedDemoDoc = await DemoModel.updateOne({ _id: demo?._id},
-                    { $set: { definition: demoFolder, status: RunStatus.finished } });
+            async (maxUtility) => {
+                if (!demo) {
+                    return res.status(403).send('create demo failed');
+                }
+                demo.status = RunStatus.finished;
+                await demo.save();
                 demoGen.tidyUp();
             },
             async (err) => {

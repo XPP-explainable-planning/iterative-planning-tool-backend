@@ -8,6 +8,7 @@ export interface Demo  extends Project{
     introduction: string;
     summaryImage?: string;
     taskInfo?: string;
+    maxUtility: { value: number, selectedPlanProperties: string[]};
 }
 
 const DemoSchema = new Schema({
@@ -16,6 +17,9 @@ const DemoSchema = new Schema({
     status: { type: Number, required: true},
     definition: { type: String, required: false},
     taskInfo: { type: String, required: false},
+    maxUtility: {
+        value: { type: Number, required: false},
+        selectedPlanProperties: [{ type: String}]}
 });
 
 export const DemoModel = BaseProjectModel.discriminator<Demo>('demo-project', DemoSchema);

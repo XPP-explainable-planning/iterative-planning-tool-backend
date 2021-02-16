@@ -23,6 +23,7 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.useTimer = updateSettings.useTimer;
     settings.maxTime = updateSettings.maxTime;
     settings.showAnimation = updateSettings.showAnimation;
+    settings.checkMaxUtility = updateSettings.checkMaxUtility;
 
     const saveResult = await settings.save();
     if (!saveResult) { return res.status(404).send({ message: 'Settings update failed.' }); }

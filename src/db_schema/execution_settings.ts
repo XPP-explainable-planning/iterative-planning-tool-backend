@@ -9,6 +9,7 @@ export interface ExecutionSettings  extends Document{
     useTimer: boolean;
     measureTime: boolean;
     maxTime: number;
+    checkMaxUtility: boolean;
     showAnimation: boolean;
 }
 
@@ -21,6 +22,7 @@ const ExecutionSettingsSchema = new Schema({
     useTimer: { type: Boolean, required: false},
     measureTime: { type: Boolean, required: false},
     maxTime: { type: Number, required: false},
+    checkMaxUtility: { type: Boolean, required: false},
     showAnimation: { type: Boolean, required: false},
 });
 
@@ -50,7 +52,8 @@ ExecutionSettingsSchema.statics.createDemoDefaultSettings = async (): Promise<st
         maxRuns: 10,
         maxQuestionSize: 1,
         public: false,
-        allowQuestions: true
+        allowQuestions: true,
+        checkMaxUtility: false,
     });
 
     const result = await settings.save();

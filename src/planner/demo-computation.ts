@@ -7,6 +7,7 @@ import * as child from 'child_process';
 import { ExperimentSetting } from './experiment_setting';
 import { PythonShell } from 'python-shell';
 import { environment } from '../app';
+import { json } from 'express';
 
 const runningPythonShells = new Map<string, PythonShell>();
 
@@ -76,7 +77,7 @@ export class DemoComputation {
 
     async executeRun(): Promise<string> {
 
-        const addArgs = [
+        const addArgsDemo = [
             `${this.runFolder}/runs`,
             `${this.runFolder}/domain.pddl`,
             `${this.runFolder}/problem.pddl`,
@@ -85,24 +86,46 @@ export class DemoComputation {
             `${this.runFolder}/results`
         ];
 
-        const options = {
+        const optionsDemo = {
             mode: 'text',
             pythonPath: '/usr/bin/python3',
             pythonOptions: ['-u'],
             scriptPath: environment.demoGenerator,
-            args: addArgs,
+            args: addArgsDemo,
             env: { PLANNER: `${this.runFolder}/fast-downward/`, PROPERTYCHECKER: environment.propertyChecker, PATH: environment.path,
                 SPOT_BIN_PATH: environment.spot, LTL2HAO_PATH: environment.ltltkit},
         };
 
-        return new Promise<string>(
-            async (resolve, reject) => {
-                this.pythonShellCall(options).then((results) => {
-                        const resultsFolder = `${this.runFolder}/results/demo.json`;
-                        writeFileSync(resultsFolder, results.join('\n'), 'utf8');
+        const addArgsDMaxUtility = [
+            `${this.runFolder}/plan-properties.json`,
+            `${this.runFolder}/results/demo.json`
+        ];
 
+        const optionsMaxUtility = {
+            mode: 'text',
+            pythonPath: '/usr/bin/python3',
+            pythonOptions: ['-u'],
+            scriptPath: environment.maxUtility,
+            args: addArgsDMaxUtility,
+            env: { PATH: environment.path},
+        };
+
+        return  new Promise<string>(
+            async (resolve, reject) => {
+                this.pythonShellCallDemo(optionsDemo).then((results1) => {
+                        const resultsFolder = `${this.runFolder}/results/demo.json`;
+                        writeFileSync(resultsFolder, results1.join('\n'), 'utf8');
                         this.copy_experiment_results();
-                        resolve(`${environment.serverResultsPath}/demo_${this.demo._id}`);
+                        this.demo.definition = `${environment.serverResultsPath}/demo_${this.demo._id}`;
+
+                        this.pythonShellCallMaxUtility(optionsMaxUtility).then((results2) => {
+                            console.log(results2);
+                            this.demo.maxUtility = JSON.parse(results2.join('\n'));
+                                resolve(this.demo.maxUtility.value?.toString());
+                        },
+                        (err) => {
+                            reject(err);
+                        });
                     },
                     (err) => {
                         reject(err);
@@ -111,7 +134,21 @@ export class DemoComputation {
 
     }
 
-    pythonShellCall(options: any): Promise<string[]> {
+    pythonShellCallDemo(options: any): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            // @ts-ignore
+            const shell: PythonShell = PythonShell.run('main.py', options, (err: any, results: any) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+            runningPythonShells.set(this.demo._id.toString(), shell);
+        });
+    }
+
+    pythonShellCallMaxUtility(options: any): Promise<string[]> {
         return new Promise((resolve, reject) => {
             // @ts-ignore
             const shell: PythonShell = PythonShell.run('main.py', options, (err: any, results: any) => {
