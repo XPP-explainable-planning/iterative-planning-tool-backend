@@ -10,6 +10,7 @@ export interface ExecutionSettings  extends Document{
     measureTime: boolean;
     maxTime: number;
     checkMaxUtility: boolean;
+    paymentInfo: string;
     showAnimation: boolean;
 }
 
@@ -23,6 +24,7 @@ const ExecutionSettingsSchema = new Schema({
     measureTime: { type: Boolean, required: false},
     maxTime: { type: Number, required: false},
     checkMaxUtility: { type: Boolean, required: false},
+    paymentInfo: { type: String, required: false},
     showAnimation: { type: Boolean, required: false},
 });
 

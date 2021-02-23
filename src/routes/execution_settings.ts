@@ -1,6 +1,6 @@
 import { ExecutionSettings, ExecutionSettingsModel } from './../db_schema/execution_settings';
 import express from 'express';
-import mongoose from 'mongoose';
+import mongoose, { set } from 'mongoose';
 import { auth } from '../middleware/auth';
 
 export const executionSettingsRouter = express.Router();
@@ -24,6 +24,7 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.maxTime = updateSettings.maxTime;
     settings.showAnimation = updateSettings.showAnimation;
     settings.checkMaxUtility = updateSettings.checkMaxUtility;
+    settings.paymentInfo = JSON.stringify(updateSettings.paymentInfo);
 
     const saveResult = await settings.save();
     if (!saveResult) { return res.status(404).send({ message: 'Settings update failed.' }); }
