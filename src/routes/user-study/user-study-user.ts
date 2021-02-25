@@ -31,6 +31,19 @@ userStudyUserRouter.post('/timelog', authUserStudy,  async (req: any, res) => {
 });
 
 
+userStudyUserRouter.put('/payment', authUserStudy,  async (req: any, res) => {
+
+    try {
+        const payment = req.body.payment;
+        const userStudyUser = req.userStudyUser;
+        userStudyUser.payment = payment;
+        userStudyUser.save().then(() => res.send(), (err: any) => console.log(err));
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+
 userStudyUserRouter.post('/logout', authUserStudy,  async (req: any, res) => {
 
     try {

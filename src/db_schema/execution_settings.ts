@@ -12,6 +12,7 @@ export interface ExecutionSettings  extends Document{
     checkMaxUtility: boolean;
     paymentInfo: string;
     showAnimation: boolean;
+    introTask: boolean;
 }
 
 const ExecutionSettingsSchema = new Schema({
@@ -26,6 +27,7 @@ const ExecutionSettingsSchema = new Schema({
     checkMaxUtility: { type: Boolean, required: false},
     paymentInfo: { type: String, required: false},
     showAnimation: { type: Boolean, required: false},
+    introTask: { type: Boolean, required: false},
 });
 
 

@@ -8,6 +8,7 @@ export interface USUser extends Document{
     token?: string;
     finished?: string;
     timeLog?: string;
+    payment?: number;
 
     generateAuthToken: () => Promise<string>;
 }
@@ -37,6 +38,10 @@ const USUserSchema =  new Schema<USUser>({
     },
     timeLog: {
         type: String,
+        required: false
+    },
+    payment: {
+        type: Number,
         required: false
     }
 }, { timestamps: true});

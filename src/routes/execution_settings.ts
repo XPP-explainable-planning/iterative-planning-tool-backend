@@ -25,6 +25,7 @@ executionSettingsRouter.put('/:id', auth, async (req, res) => {
     settings.showAnimation = updateSettings.showAnimation;
     settings.checkMaxUtility = updateSettings.checkMaxUtility;
     settings.paymentInfo = JSON.stringify(updateSettings.paymentInfo);
+    settings.introTask = updateSettings.introTask;
 
     const saveResult = await settings.save();
     if (!saveResult) { return res.status(404).send({ message: 'Settings update failed.' }); }
