@@ -147,7 +147,9 @@ export class PlannerCall {
 
 
 
-const plannerSettingOptPlan = ['--search', 'astar(hmax())'];
+// const plannerSettingOptPlan = ['--search', 'astar(hmax())'];
+const plannerSettingOptPlan = ['--search', 'astar(iPDB())'];
+const plannerSettingSatPlan = ['--search', 'lazy_greedy([ff()], preferred=[ff()])'];
 export class PlanCall extends PlannerCall{
 
     constructor(root: string, private run: PlanRun) {
