@@ -171,3 +171,25 @@ export class DemoComputation {
         runningPythonShells.delete(this.demo._id);
     }
 }
+
+
+
+export class DemoPreComputation {
+
+    constructor(
+        private demo: Demo,
+        private data: string,
+        private maxUtility: string) {
+    }
+
+    store() {
+        child.execSync(`mkdir  ${environment.resultsPath}/demo_${this.demo._id}`);
+        writeFileSync(`${environment.resultsPath}/demo_${this.demo._id}/demo.json`, this.data, 'utf8');
+
+        this.demo.definition = `${environment.serverResultsPath}/demo_${this.demo._id}`;
+        // console.log(this.maxUtility);
+        this.demo.maxUtility = JSON.parse(this.maxUtility);
+    }
+
+
+}

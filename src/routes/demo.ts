@@ -7,7 +7,7 @@ import { PlanPropertyModel } from '../db_schema/plan-properties/plan_property';
 import { Demo, DemoModel } from './../db_schema/demo';
 import express from 'express';
 import mongoose from 'mongoose';
-import { cancelDemoComputation, DemoComputation } from '../planner/demo-computation';
+import { cancelDemoComputation, DemoComputation, DemoPreComputation } from '../planner/demo-computation';
 import { auth } from '../middleware/auth';
 
 import multer from 'multer';
@@ -126,6 +126,90 @@ demoRouter.post('/', auth, upload.single('summaryImage'), async (req, res) => {
         });
 
     } catch (ex) {
+        DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
+        res.send(ex.message);
+    }
+});
+
+
+
+demoRouter.post('/precomputed', auth, upload.single('summaryImage'), async (req, res) => {
+
+    // console.log(req.body);
+
+    let demo: Demo | null = null;
+    try {
+
+        const settingsId = await (ExecutionSettingsModel as any).createDemoDefaultSettings();
+        const project = await ProjectModel.findById(req.body.projectId);
+
+
+        let imageFilePath = '';
+        if (req.file) {
+            imageFilePath = '/uploads/' + req.file.filename;
+        }
+
+        // Copy Project Data:
+        const projectData = project?.toJSON();
+        delete projectData?._id;
+        delete projectData?.itemType;
+        delete projectData?.settings;
+
+        demo = new DemoModel(projectData);
+        demo.isNew = true;
+
+        demo.name = req.body.name;
+        demo.summaryImage = imageFilePath;
+        demo.status = RunStatus.pending;
+        demo.settings = settingsId;
+        demo.description = req.body.description;
+        demo.taskInfo = req.body.taskInfo;
+
+        if (!demo) {
+            return res.status(403).send('create demo failed');
+        }
+
+        await demo.save();
+
+        // copy plan-properties
+        const planProperties = await PlanPropertyModel.find({ project: project?._id, isUsed: true });
+        for (const pp of planProperties) {
+            const newPP = new PlanPropertyModel(pp);
+            newPP._id = undefined;
+            newPP.project = demo._id;
+            newPP.isNew = true;
+            await newPP.save();
+        }
+
+    } catch (ex) {
+        res.send(ex.message);
+        return;
+    }
+
+    // Store precomputed Demo data
+    try {
+
+        demo.status = RunStatus.running;
+        await demo.save();
+
+        const demoData = req.body.demoData;
+        const maxUtility = req.body.maxUtility;
+
+        const demoGen = new DemoPreComputation(demo, demoData, maxUtility);
+        demoGen.store();
+        demo.status = RunStatus.finished;
+        await demo.save();
+
+        // console.log(demo);
+        res.send({
+            status: true,
+            message: 'Demo created',
+            data: demo
+        });
+
+    } catch (ex) {
+        // console.log(ex);
+        // console.log(demo);
         DemoModel.updateOne({ _id: demo?._id}, { $set: { status: RunStatus.failed } });
         res.send(ex.message);
     }
