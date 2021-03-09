@@ -7,6 +7,7 @@ export interface USUser extends Document{
     userStudy: string;
     token?: string;
     finished?: string;
+    accepted?: boolean;
     timeLog?: string;
     payment?: number;
 
@@ -33,6 +34,10 @@ const USUserSchema =  new Schema<USUser>({
         required: false
     },
     finished: {
+        type: String,
+        required: false
+    },
+    accepted: {
         type: String,
         required: false
     },

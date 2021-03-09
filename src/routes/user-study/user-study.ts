@@ -167,3 +167,52 @@ userStudyRouter.get('/:id/data', auth, async (req, res) => {
         res.send(ex.message);
     }
 });
+
+
+
+userStudyRouter.get('/:id/users', auth, async (req, res) => {
+    try {
+        const refId = mongoose.Types.ObjectId(req.params.id);
+
+        const userStudy: UserStudy | null = await UserStudyModel.findOne({ _id: refId});
+
+        if (!userStudy) {
+            return res.status(403).send('update user study failed');
+        }
+
+        const users: USUser[] = await  USUserModel.find({ userStudy: userStudy._id});
+
+        res.send({
+            status: true,
+            message: 'user study updated',
+            data: users
+        });
+
+    } catch (ex) {
+        res.send(ex.message);
+    }
+});
+
+userStudyRouter.get('/:id/num_accepted_users', auth, async (req, res) => {
+    try {
+        const refId = mongoose.Types.ObjectId(req.params.id);
+
+        const userStudy: UserStudy | null = await UserStudyModel.findOne({ _id: refId});
+
+        if (!userStudy) {
+            return res.status(403).send('update user study failed');
+        }
+
+        const users: USUser[] = await  USUserModel.find({ userStudy: userStudy._id, accepted: true});
+        const numUsers = users.length;
+
+        res.send({
+            status: true,
+            message: 'num accepted users',
+            data: numUsers
+        });
+
+    } catch (ex) {
+        res.send(ex.message);
+    }
+});

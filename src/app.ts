@@ -23,6 +23,7 @@ import { userStudyUserRouter } from './routes/user-study/user-study-user';
 import { Environment } from './environment';
 
 import * as dotenv from "dotenv";
+import { metaStudyRouter } from './routes/user-study/meta-study';
 dotenv.config();
 
 console.log('-------- EXPLORE BACK END ---------');
@@ -54,6 +55,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users', userRouter);
 app.use('/api/user-study-users', userStudyUserRouter);
 
+app.use('/api/meta-study', metaStudyRouter);
 app.use('/api/user-study', userStudyRouter);
 app.use('/api/demo', demoRouter);
 
