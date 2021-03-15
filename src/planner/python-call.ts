@@ -26,7 +26,7 @@ export function pythonShellCallFD(options: any): Promise<CallResult> {
         // @ts-ignore
         PythonShell.run('run_FD.py', options,  (err: PythonShellError, results: any) => {
             if (err) {
-                if (err.exitCode === 12) {
+                if (err.exitCode === 12 || err.exitCode === 22 || err.exitCode === 23) {
                     resolve({ planFound: false, log: []});
                     return;
                 }

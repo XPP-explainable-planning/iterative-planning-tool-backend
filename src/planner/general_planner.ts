@@ -114,8 +114,13 @@ export class PlannerCall {
 
     async executeRun(): Promise<boolean> {
 
-        const addArgs = [this.runFolder, '--build', 'release64', `${this.runFolder}/domain.pddl`,
-            `${this.runFolder}/problem.pddl`, `${this.runFolder}/exp_setting.json`, ...this.plannerSetting];
+        const addArgs = [this.runFolder,
+            '--build', 'release64',
+            '--overall-memory-limit', '400M',
+            '--overall-time-limit', '1m',
+            `${this.runFolder}/domain.pddl`,
+            `${this.runFolder}/problem.pddl`,
+            `${this.runFolder}/exp_setting.json`, ...this.plannerSetting];
 
         const options = {
             mode: 'text',
