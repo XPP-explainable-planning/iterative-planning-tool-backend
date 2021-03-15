@@ -193,7 +193,7 @@ userStudyRouter.get('/:id/users', auth, async (req, res) => {
     }
 });
 
-userStudyRouter.get('/:id/num_accepted_users', auth, async (req, res) => {
+userStudyRouter.get('/:id/num_accepted_users', async (req, res) => {
     try {
         const refId = mongoose.Types.ObjectId(req.params.id);
 

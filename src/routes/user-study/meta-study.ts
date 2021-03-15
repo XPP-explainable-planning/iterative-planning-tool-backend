@@ -52,7 +52,7 @@ metaStudyRouter.put('/:id', auth, async (req, res) => {
 });
 
 
-metaStudyRouter.get('/', authForward, async (req: any, res) => {
+metaStudyRouter.get('/', auth, async (req: any, res) => {
     try {
         const metaStudies = await MetaStudyModel.find({ user: req.user._id});
 
@@ -68,12 +68,9 @@ metaStudyRouter.get('/', authForward, async (req: any, res) => {
 });
 
 
-metaStudyRouter.get('/:id', authForward, authUserStudy, async (req: any, res) => {
-    if (! req.user && ! req.userStudyUser) {
-        return res.status(401).send({ message: 'Not authorized to access this resource' });
-    }
+metaStudyRouter.get('/:id', async (req: any, res) => {
     const id = mongoose.Types.ObjectId(req.params.id);
-    const metaStudy = await MetaStudyModel.findOne({ _id: id }).populate('userStudies');
+    const metaStudy = await MetaStudyModel.findOne({ _id: id });
 
     if (!metaStudy) { return res.status(404).send({ message: 'No user study found.' }); }
     res.send({
