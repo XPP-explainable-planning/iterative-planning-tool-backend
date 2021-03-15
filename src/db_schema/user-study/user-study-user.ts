@@ -38,7 +38,7 @@ const USUserSchema =  new Schema<USUser>({
         required: false
     },
     accepted: {
-        type: String,
+        type: Boolean,
         required: false
     },
     timeLog: {
